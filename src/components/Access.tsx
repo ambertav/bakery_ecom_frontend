@@ -3,7 +3,7 @@ import { FormData, ErrorResponse } from "../../types/types";
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { createUserWithEmailAndPassword, getIdToken, UserCredential, User } from '@firebase/auth';
-import { auth } from '../app/firebaseInit';
+import { auth } from '../app/firebase/firebaseConfig';
 
 function isAxiosError(error: any) : error is import('axios').AxiosError {
     return error.response !== undefined;
