@@ -5,24 +5,17 @@ import { useRouter } from 'next/router';
 import { createUserWithEmailAndPassword, getIdToken, UserCredential, User } from '@firebase/auth';
 import { auth } from '../app/firebase/firebaseConfig';
 
+// type for signup and login props
+interface AccessProps {
+    path: string;
+    method: (email: string, password: string) => Promise<User | null>;
+  }
+
 function isAxiosError(error: any) : error is import('axios').AxiosError {
     return error.response !== undefined;
 }
 
-async function signup (email : string, password : string) {
-    try {
-        const userCredential : UserCredential = await createUserWithEmailAndPassword(auth, email, password);
-        console.log (userCredential)
-        const newUser : User | null = userCredential.user;
-        console.log(newUser)
-        return newUser;
-    } catch (error) {
-        console.log('Error signing up: ', error);
-        return null;
-    }
-}
-
-export default function Access () {
+export default function Access (props : AccessProps) {
     const router = useRouter();
     const [ formInput, setFormInput ] = useState<FormData>({
         name: '',
@@ -31,12 +24,18 @@ export default function Access () {
         confirm_password: '',
     });
     const [ errorMessage, setErrorMessage ] = useState<string>('');
-    const url = 'http://127.0.0.1:5000/';
+    const url = 'http://127.0.0.1:5000/user/';
 
+    function formVerification(password: string, confirm: string): string | undefined {
+        if (password !== confirm) {
+          return 'Passwords do not match';
+        }
+        // Return undefined when passwords match
+        return undefined;
+      }
 
     const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = evt.target;
-        console.log(formInput.name)
         setFormInput((prev) => ({
         ...prev,
         [name]: value,
@@ -45,20 +44,22 @@ export default function Access () {
 
     const handleSubmit = async (evt: FormEvent) => {
         evt.preventDefault();
-        // condition to update url path based on signup and login
-        let specificPath: string = router.pathname === '/signup' ? 'signup' : 'login';
+        const submitInput = props.path === 'signup' ? formInput.name : '';
         // password match
-        if (formInput.confirm_password && formInput.password !== formInput.confirm_password) return setErrorMessage('Passwords do not match');
+        if (props.path === 'signup') {
+            const message = formVerification(formInput.password, formInput.confirm_password);
+            if (message) return setErrorMessage(message);
+        }
+
         try {
-            // signup user with firebase
-            const newUser = await signup(formInput.email, formInput.password);
-            console.log(newUser)
+            // signup or login user with firebase
+            const user = await props.method(formInput.email, formInput.password);
             try {
-                if (newUser) {
+                if (user) {
                     // get token
-                    const token = await getIdToken(newUser);
+                    const token = await getIdToken(user);
                     // send token and user name to backend
-                    const response = await axios.post(url + 'user/' + specificPath, formInput.name, {
+                    const response = await axios.post(url + props.path, submitInput, {
                         headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
@@ -66,13 +67,12 @@ export default function Access () {
                         withCredentials: true,
                     });
                     // redirect to main page
-                    if (response.status === 201) router.push('/');
+                    if (response.status === 201 || response.status === 200) router.push('/');
                 }
-                if (!newUser) console.error
             } catch (error) {
                 if (isAxiosError(error) && error.response) {
                     if (error.code === 'auth/email-already-in-use') setErrorMessage('Email already in use');
-                    else console.error('Error creating user:', error);
+                    else console.error(error);
                 }   
             }
         } catch (error) {
@@ -103,10 +103,10 @@ export default function Access () {
 
     return (
         <main>
-            <h1>{router.pathname === '/signup' ? 'Sign Up' : 'Login'}</h1>
+            <h1>{props.path === 'signup' ? 'Signup' : 'Login'}</h1>
             <span>{errorMessage}</span>
             <form onSubmit={handleSubmit}>
-                {router.pathname === '/signup' ? (
+                {props.path === 'signup' ? (
                     <>
                         {renderInput('name', 'Name')}
                         {renderInput('email', 'Email', 'email')}
