@@ -3,7 +3,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
-import { AuthContextProvider } from './context/AuthContext';
+import { AuthContextProvider } from './firebase/AuthContext';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
