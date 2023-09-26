@@ -1,10 +1,6 @@
 import Link from 'next/link';
-import { ProductType } from '../../types/types';
+import { ProductProps } from '../../types/types';
 
-interface ProductProps {
-    product: ProductType;
-    page: string;
-}
 
 export default function Product (props: ProductProps) {
     return (

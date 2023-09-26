@@ -4,11 +4,6 @@ import { ProductType } from '../../../types/types';
 
 import Product from '@/components/Product';
 
-interface ProductProps {
-    product: ProductType[];
-    page: string;
-}
-
 export default function ProductIndex () {
     const [ products, setProducts ] = useState<ProductType[] | null>(null);
     const url = 'http://127.0.0.1:5000/product';
