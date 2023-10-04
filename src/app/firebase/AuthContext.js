@@ -5,29 +5,29 @@ import { auth } from './firebaseConfig';
 const AuthContext = createContext();
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+    return useContext(AuthContext);
 };
 
 export const AuthContextProvider = ({ children }) => {
-  const [user, loading, error] = useAuthState(auth); // Use your custom auth object
+    const [user, loading, error] = useAuthState(auth); 
+    const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      // setUser(currentUser); // You don't have setUser defined
-    });
-    return () => unsubscribe();
-  }, []);
+    useEffect(() => {
+        // listener for authentication changes
+        const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+            setCurrentUser(currentUser);
+        });
+        // clean up after unmount
+        return () => unsubscribe();
+    }, []);
 
-  // You need to store the user state somewhere
-  const [currentUser, setCurrentUser] = useState(null);
+    useEffect(() => {
+        setCurrentUser(user);
+    }, [user]);
 
-  useEffect(() => {
-    setCurrentUser(user);
-  }, [user]);
-
-  return (
-    <AuthContext.Provider value={{ user: currentUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider value={{ user: currentUser }}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
