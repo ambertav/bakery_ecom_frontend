@@ -6,6 +6,7 @@ function Navigation () {
     return (
         <nav>
             <ul>
+                 <Link href='/products'>Browse Bakery</Link>
                 {user ? (
                     <>
                         <Link href='/account'>Account</Link>
