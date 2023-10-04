@@ -1,5 +1,6 @@
 import { signInWithEmailAndPassword, UserCredential, User } from '@firebase/auth';
 import { auth } from '../app/firebase/firebaseConfig';
+import Link from 'next/link';
 
 import Access from '@/components/Access';
 
@@ -18,6 +19,12 @@ export default function Login () {
     }    
 
     return  (
-        <Access path='login' method={login} />
+        <>
+            <Access path='login' method={login} />  
+            <p>Don't have an account? 
+                <br />
+                <Link href='/signup'>Signup</Link> now
+            </p>
+        </>
     );
 }
