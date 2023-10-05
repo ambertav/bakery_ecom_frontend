@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getIdToken } from 'firebase/auth';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/app/firebase/AuthContext';
@@ -10,18 +11,15 @@ export default function ProductShow () {
     const { user } = useAuth();
     const router = useRouter();
     const [ product, setProduct ] = useState<ProductType | null>(null);
-    const url = 'http://127.0.0.1:5000/product/';
+    const url = 'http://127.0.0.1:5000/';
 
     const { id } = router.query;
     
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await axios.get(url + id);
-                if (response.status === 200) {
-                    const { product } = response.data;
-                    setProduct(product);
-                }
+                const response = await axios.get(url + 'product/' + id);
+                if (response.status === 200) setProduct(response.data.product);
             } catch (error) {
                 console.error('Error fetching product: ', error);
             }
@@ -31,7 +29,26 @@ export default function ProductShow () {
 
     async function handleAddToCart () {
         // if no user, redirect to login page (for now)
+        if (!user) router.push('/login');
         // if user, make req to /cart/create to create cart item for user
+        else {
+            try {
+                const token = await getIdToken(user);
+                const response = await axios.post(url + '/user/cart/add', product, {                        headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                    },
+                    withCredentials: true,
+                });
+                if (response.status === 201) {
+                    console.log('success');
+                    // render cart pop up on navbar to link to cart
+                }
+            } catch (error) {
+                console.error('Error adding to cart: ', error);
+            }
+        }
+
     }
 
     return (
