@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getIdToken } from 'firebase/auth';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/app/firebase/AuthContext';
 import { ProductType } from '../../../types/types';
@@ -13,6 +13,9 @@ export default function ProductShow () {
     const router = useRouter();
 
     const [ product, setProduct ] = useState<ProductType | null>(null);
+    const [ formState, setFormState ] = useState({
+        qty: 1
+    });
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
 
     const url = 'http://127.0.0.1:5000/';
@@ -33,16 +36,22 @@ export default function ProductShow () {
         }, 750);
     }, []);
 
-    async function handleAddToCart () {
+    async function handleAddToCart (evt: FormEvent<HTMLFormElement>) {
+        evt.preventDefault();
+        const data = {
+            id: product?.id,
+            qty: formState.qty
+        }
         // if no user, redirect to login page (for now)
         if (!user) router.push('/login');
         // if user, make req to /cart/create to create cart item for user
         else {
             try {
                 const token = await getIdToken(user);
-                const response = await axios.post(url + '/user/cart/add', product, {                        headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
+                const response = await axios.post(url + '/user/cart/add', data, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
                     },
                     withCredentials: true,
                 });
@@ -66,7 +75,14 @@ export default function ProductShow () {
                     (
                         <>
                             <Product product={product} page='show' />
-                            <button onClick={handleAddToCart}>Add to Cart</button>
+                            <form onSubmit={(evt) => {handleAddToCart(evt)}}>
+                                <input type="number" name="qty" id="qty" value={formState.qty} min={1} onChange={(evt) => {
+                                    setFormState({
+                                        qty: Number(evt.target.value)
+                                    });
+                                }}/>
+                                <input type="submit" value="Add to Cart" />
+                            </form>
                         </>
                     ) : (
                         <div>No product</div>
