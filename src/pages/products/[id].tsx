@@ -6,13 +6,16 @@ import { useAuth } from '@/app/firebase/AuthContext';
 import { ProductType } from '../../../types/types';
 
 import Product from '@/components/Product';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function ProductShow () {
     const { user } = useAuth();
     const router = useRouter();
-    const [ product, setProduct ] = useState<ProductType | null>(null);
-    const url = 'http://127.0.0.1:5000/';
 
+    const [ product, setProduct ] = useState<ProductType | null>(null);
+    const [ isLoading, setIsLoading ] = useState<boolean>(true);
+
+    const url = 'http://127.0.0.1:5000/';
     const { id } = router.query;
     
     useEffect(() => {
@@ -25,6 +28,9 @@ export default function ProductShow () {
             }
         }
         fetchProduct();
+        setTimeout(() => {
+            setIsLoading(false);
+        }, 750);
     }, []);
 
     async function handleAddToCart () {
@@ -51,20 +57,29 @@ export default function ProductShow () {
 
     }
 
-    return (
-        <main>
-            <div>
-                {product !== null ? 
-                (
-                    <>
-                        <Product product={product} page='show' />
-                        <button onClick={handleAddToCart}>Add to Cart</button>
-                    </>
-                ) : (
-                    <div>No product</div>
-                )
-                }
-            </div>
-        </main>
-    );
+
+    function loaded () {
+        return (
+            <main>
+                <div>
+                    {product !== null ? 
+                    (
+                        <>
+                            <Product product={product} page='show' />
+                            <button onClick={handleAddToCart}>Add to Cart</button>
+                        </>
+                    ) : (
+                        <div>No product</div>
+                    )
+                    }
+                </div>
+            </main>
+        );
+    }
+
+    function loading () {
+        return <LoadingSpinner />;
+    }
+
+    return isLoading ? loading() : loaded();
 }
