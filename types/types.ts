@@ -22,10 +22,11 @@ export interface ProductProps {
 
 export interface CartItem {
     id: number;
-    userId: number;
     productId: number;
+    name: string;
+    image: string;
+    price: number;
     quantity: number;
-    ordered: boolean;
 }
 
 export interface ShoppingCart extends Array<CartItem> {}

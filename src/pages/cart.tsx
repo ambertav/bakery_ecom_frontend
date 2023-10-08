@@ -15,24 +15,62 @@ export default function ShoppingCart () {
     const [ cart, setCart ] = useState<ShoppingCart | null>(null);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
 
+    const url = 'http://127.0.0.1:5000/user/cart/';
+
     useEffect(() => {
         const fetchShoppingCart = async () => {
-            try {
-
-            } catch (error) {
-                console.error('Error fetching shopping cart: ', error);
+            if (user) {
+                try {
+                    const token = await getIdToken(user);
+                    const response = await axios.get(url, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        withCredentials: true,
+                    });
+                    if (response.status === 200) setCart(response.data.shopping_cart);
+                } catch (error) {
+                    console.error('Error fetching shopping cart: ', error);
+                }
             }
         }
         fetchShoppingCart();
         setTimeout(() => {
             setIsLoading(false);
-        }, 750);
-    }, []);
+        }, 900);
+    }, [user]);
 
     function loaded () {
+        let total : number = 0;
         return (
             <main>
-                Loaded
+                <h1>Shopping Cart</h1>
+                <div>
+                    <ul>
+                        {cart !== null ? 
+                            cart.map((c, key) => {
+                                total += Number(c.price);
+                                return (
+                                    <li>
+                                        <div key={key}>
+                                            <p>{c.name}</p>
+                                            <img src={c.image} />
+                                            <p>{c.quantity}</p>
+                                            <p>{c.price}</p>
+                                        </div>
+                                    </li>
+                                );
+                            })
+                            :
+                            <li>no cart</li>   
+                        }
+                    </ul>
+                    {total > 0 ? 
+                        <div>Total price: {total}</div>  
+                        :
+                        ''  
+                }
+                </div>
             </main>
         );
     }
