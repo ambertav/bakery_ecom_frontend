@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useRouter } from 'next/router';
 import { getIdToken } from 'firebase/auth';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/firebase/AuthContext';
@@ -11,6 +12,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function ShoppingCart () {
     const { user } = useAuth();
+    const router = useRouter();
 
     const [ cart, setCart ] = useState<ShoppingCart | null>(null);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
@@ -40,6 +42,21 @@ export default function ShoppingCart () {
         }, 900);
     }, [user]);
 
+    async function handleRemove (id : number) {
+        try {
+            const token = await getIdToken(user);
+            const response = await axios.delete(url + id + '/delete', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                withCredentials: true
+            });
+            if (response.status === 200) router.reload();
+        } catch (error) {
+            console.error('Error removing from cart: ', error);
+        } 
+    }
+
     function loaded () {
         let total : number = 0;
         return (
@@ -51,12 +68,15 @@ export default function ShoppingCart () {
                             cart.map((c, key) => {
                                 total += Number(c.price);
                                 return (
-                                    <li>
-                                        <div key={key}>
+                                    <li key={key}>
+                                        <div>
                                             <p>{c.name}</p>
                                             <img src={c.image} />
                                             <p>{c.quantity}</p>
                                             <p>{c.price}</p>
+                                            <div>
+                                                <button onClick={() => {handleRemove(c.id)}}>Remove from Cart</button>
+                                            </div>
                                         </div>
                                     </li>
                                 );
