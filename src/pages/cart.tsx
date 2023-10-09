@@ -86,7 +86,7 @@ export default function ShoppingCart () {
                         }
                     </ul>
                     {total > 0 ? 
-                        <div>Total price: {total}</div>  
+                        <div>Total price: {total.toFixed(2)}</div>  
                         :
                         ''  
                 }
