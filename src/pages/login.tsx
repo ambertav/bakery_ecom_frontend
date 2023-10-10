@@ -20,7 +20,7 @@ export default function Login () {
 
     return  (
         <>
-            <Access path='login' method={login} />  
+            <Access method={login} />  
             <p>Don't have an account? 
                 <br />
                 <Link href='/signup'>Signup</Link> now

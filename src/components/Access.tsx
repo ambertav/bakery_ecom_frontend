@@ -7,7 +7,6 @@ import { auth } from '../app/firebase/firebaseConfig';
 
 // type for signup and login props
 interface AccessProps {
-    path: string;
     method: (email: string, password: string) => Promise<User | null>;
   }
 
@@ -24,7 +23,7 @@ export default function Access (props : AccessProps) {
         confirm_password: '',
     });
     const [ errorMessage, setErrorMessage ] = useState<string>('');
-    const url = 'http://127.0.0.1:5000/user/';
+    const url = 'http://127.0.0.1:5000/user';
 
     function formVerification(password: string, confirm: string): string | undefined {
         if (password !== confirm) {
@@ -44,9 +43,9 @@ export default function Access (props : AccessProps) {
 
     const handleSubmit = async (evt: FormEvent) => {
         evt.preventDefault();
-        const submitInput = props.path === 'signup' ? formInput.name : '';
+        const submitInput = router.pathname === '/signup' ? formInput.name : '';
         // password match
-        if (props.path === 'signup') {
+        if (router.pathname === 'signup') {
             const message = formVerification(formInput.password, formInput.confirm_password);
             if (message) return setErrorMessage(message);
         }
@@ -59,7 +58,7 @@ export default function Access (props : AccessProps) {
                     // get token
                     const token = await getIdToken(user);
                     // send token and user name to backend
-                    const response = await axios.post(url + props.path, submitInput, {
+                    const response = await axios.post(url + router.pathname, submitInput, {
                         headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
@@ -103,10 +102,10 @@ export default function Access (props : AccessProps) {
 
     return (
         <main>
-            <h1>{props.path === 'signup' ? 'Signup' : 'Login'}</h1>
+            <h1>{router.pathname === '/signup' ? 'Signup' : 'Login'}</h1>
             <span>{errorMessage}</span>
             <form onSubmit={handleSubmit}>
-                {props.path === 'signup' ? (
+                {router.pathname === '/signup' ? (
                     <>
                         {renderInput('name', 'Name')}
                         {renderInput('email', 'Email', 'email')}

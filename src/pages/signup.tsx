@@ -17,6 +17,6 @@ export default function Signup () {
     }
       
     return (
-        <Access path='signup' method={signup} />
+        <Access method={signup} />
     );
 }
