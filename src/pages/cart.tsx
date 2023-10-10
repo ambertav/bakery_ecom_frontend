@@ -57,6 +57,25 @@ export default function ShoppingCart () {
         } 
     }
 
+    async function updateQuantity (action : 'minus' | 'plus', id : number, quantity : number) {
+        let newQty = quantity;
+        if (action === 'minus') newQty--;
+        else if (action === 'plus') newQty++;
+        try {
+            const token = await getIdToken(user);
+            const response = await axios.put(url + id + '/update', { newQty }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                withCredentials: true
+            });
+            if (response.status === 200) router.reload();
+        } catch (error) {
+            console.error('Error updating cart: ', error);
+        } 
+    }
+
     function loaded () {
         let total : number = 0;
         return (
@@ -72,7 +91,11 @@ export default function ShoppingCart () {
                                         <div>
                                             <p>{c.name}</p>
                                             <img src={c.image} />
-                                            <p>{c.quantity}</p>
+                                            <div>
+                                                <button onClick={() => {updateQuantity('minus', c.id, c.quantity)}}>-</button>
+                                                    <p>{c.quantity}</p>
+                                                <button onClick={() => {updateQuantity('plus', c.id, c.quantity)}}>+</button>
+                                            </div>
                                             <p>{c.price}</p>
                                             <div>
                                                 <button onClick={() => {handleRemove(c.id)}}>Remove from Cart</button>
