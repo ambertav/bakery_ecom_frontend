@@ -85,7 +85,7 @@ export default function ShoppingCart () {
                     <ul>
                         {cart !== null ? 
                             cart.map((c, key) => {
-                                total += Number(c.price);
+                                total += Number(c.price) * c.quantity;
                                 return (
                                     <li key={key}>
                                         <div>
