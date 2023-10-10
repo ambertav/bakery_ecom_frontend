@@ -1,22 +1,29 @@
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import { ReactNode } from 'react';
 import { getIdToken } from 'firebase/auth';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/firebase/AuthContext';
 
+import { ShoppingCart } from '../../types/types';
 
-import { CartItem, ShoppingCart } from '../../types/types';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import CheckoutButton from '@/components/CheckoutButton';
+type CartQueryProps = {
+    children: (
+      cart: ShoppingCart | null,
+      isLoading: boolean,
+      error: Error | null,
+      handleRemove: (id: number) => void,
+      updateQuantity: (action: 'minus' | 'plus', id: number, quantity: number) => void
+    ) => ReactNode;
+  };
 
-
-
-export default function ShoppingCart () {
+export default function CartQuery ({ children }: CartQueryProps) {
     const { user } = useAuth();
     const router = useRouter();
 
     const [ cart, setCart ] = useState<ShoppingCart | null>(null);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
+    const [ error, setError ] = useState<Error | null>(null);
 
     const url = 'http://127.0.0.1:5000/user/cart/';
 
@@ -77,57 +84,5 @@ export default function ShoppingCart () {
         } 
     }
 
-    function loaded () {
-        let total : number = 0;
-        return (
-            <main>
-                <h1>Shopping Cart</h1>
-                <div>
-                    <ul>
-                        {cart !== null ? 
-                            cart.map((c, key) => {
-                                total += Number(c.price) * c.quantity;
-                                return (
-                                    <li key={key}>
-                                        <div>
-                                            <p>{c.name}</p>
-                                            <img src={c.image} />
-                                            <div>
-                                                <button onClick={() => {updateQuantity('minus', c.id, c.quantity)}}>-</button>
-                                                    <p>{c.quantity}</p>
-                                                <button onClick={() => {updateQuantity('plus', c.id, c.quantity)}}>+</button>
-                                            </div>
-                                            <p>{c.price}</p>
-                                            <div>
-                                                <button onClick={() => {handleRemove(c.id)}}>Remove from Cart</button>
-                                            </div>
-                                        </div>
-                                    </li>
-                                );
-                            })
-                            :
-                            <li>no cart</li>   
-                        }
-                    </ul>
-                    {total > 0 ? 
-                        <div>Total price: {total.toFixed(2)}</div>  
-                        :
-                        ''  
-                }
-                    {cart !== null && cart.length > 0 ? (
-                        <CheckoutButton cart={cart} />
-                    ) : (
-                        ''
-                    )}
-                </div>
-            </main>
-        );
-    }
-
-    function loading () {
-        return <LoadingSpinner />;
-    }
-
-    return isLoading ? loading() : loaded();
-
+    return children(cart, isLoading, error, handleRemove, updateQuantity);
 }
