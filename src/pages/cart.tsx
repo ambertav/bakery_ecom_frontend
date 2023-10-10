@@ -7,6 +7,7 @@ import { useAuth } from '@/app/firebase/AuthContext';
 
 import { CartItem, ShoppingCart } from '../../types/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import CheckoutButton from '@/components/CheckoutButton';
 
 
 
@@ -113,6 +114,11 @@ export default function ShoppingCart () {
                         :
                         ''  
                 }
+                    {cart !== null && cart.length > 0 ? (
+                        <CheckoutButton cart={cart} />
+                    ) : (
+                        ''
+                    )}
                 </div>
             </main>
         );
