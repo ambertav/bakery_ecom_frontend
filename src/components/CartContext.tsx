@@ -1,28 +1,33 @@
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { ReactNode } from 'react';
-import { getIdToken } from 'firebase/auth';
-import { useState, useEffect } from 'react';
+import { getIdToken, User } from 'firebase/auth';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '@/app/firebase/AuthContext';
-
 import { ShoppingCart } from '../../types/types';
 
-type CartQueryProps = {
-    children: (
-      cart: ShoppingCart | null,
-      isLoading: boolean,
-      error: Error | null,
-      handleRemove: (id: number) => void,
-      updateQuantity: (action: 'minus' | 'plus', id: number, quantity: number) => void
-    ) => ReactNode;
-  };
+type CartContextType = {
+    cart: ShoppingCart | null;
+    user: User;
+    error: Error | null;
+    handleRemove: (id: number) => void;
+    updateQuantity: (action: 'minus' | 'plus', id: number, quantity: number) => void;
+}
 
-export default function CartQuery ({ children }: CartQueryProps) {
+type CartContextProviderProps = {
+    children: ReactNode;
+}
+
+const CartContext = createContext <CartContextType | undefined> (undefined);
+
+export const useCartContext = () => {
+    return useContext(CartContext);
+}
+
+export const CartContextProvider = ({ children }: CartContextProviderProps) => {
     const { user } = useAuth();
     const router = useRouter();
 
     const [ cart, setCart ] = useState<ShoppingCart | null>(null);
-    const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ error, setError ] = useState<Error | null>(null);
 
     const url = 'http://127.0.0.1:5000/user/cart/';
@@ -45,10 +50,7 @@ export default function CartQuery ({ children }: CartQueryProps) {
             }
         }
         fetchShoppingCart();
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 900);
-    }, [user]);
+    }, [user, cart]);
 
     async function handleRemove (id : number) {
         try {
@@ -84,5 +86,9 @@ export default function CartQuery ({ children }: CartQueryProps) {
         } 
     }
 
-    return children(cart, isLoading, error, handleRemove, updateQuantity);
+    return (
+        <CartContext.Provider value={{ cart, user, error, handleRemove, updateQuantity }}> 
+            { children }
+        </CartContext.Provider>
+    );
 }
