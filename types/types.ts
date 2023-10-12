@@ -30,3 +30,12 @@ export interface CartItem {
 }
 
 export interface ShoppingCart extends Array<CartItem> {}
+
+export interface AddressType {
+    firstName: string;
+    lastName: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+}
