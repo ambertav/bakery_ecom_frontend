@@ -6,8 +6,9 @@ import { getIdToken } from 'firebase/auth';
 import { useCartContext } from '../../components/CartContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
-import { ShoppingCart, AddressType } from '../../../types/types';
+import { AddressType } from '../../../types/types';
 
+// empty address for state initialization
 const initAddress : AddressType = {
     firstName: '',
     lastName: '',
@@ -24,9 +25,10 @@ export default function Checkout () {
     const [ shipping, setShipping ] = useState <AddressType> (initAddress);
     const [ method, setMethod ] = useState <string> ('');
 
-    const [ isProcessing, setIsProcessing ] = useState<boolean>(false);
     const [ isLoading, setIsLoading ] = useState <boolean> (true);
+    const [ isProcessing, setIsProcessing ] = useState<boolean>(false);
 
+    // url endpoint for stripe checkout page creation
     const url = 'http://127.0.0.1:5000/create-checkout-session';
 
     useEffect(() => {
@@ -36,6 +38,7 @@ export default function Checkout () {
     }, []);
 
     function renderAddressForm (formState : AddressType, formName : string) {
+        // to render both billing and shipping address forms
         return (
             <>
                 <div>
@@ -105,6 +108,7 @@ export default function Checkout () {
     }
 
     function handleInputChange (evt : React.ChangeEvent<HTMLInputElement>, formName: string) {
+        // updates corresponding state based on which form is being changed
         const { name, value } = evt.target;
         if (formName === 'Billing') {
             setBilling((prevBilling) => ({
@@ -120,15 +124,24 @@ export default function Checkout () {
         }
     }
 
+    function handleSameAsBilling (evt : React.MouseEvent<HTMLButtonElement>) {
+        // updates shipping state with billing state
+        evt.preventDefault();
+        setShipping(billing);
+    }
+
     function handleSelectChange (evt : React.ChangeEvent<HTMLSelectElement>) {
+        // updates state for delivery method select tag
         setMethod(evt.target.value);
     }
 
     async function handleSubmit (evt : React.FormEvent) {
         evt.preventDefault();
         if (cartContext) {
-            const { cart, user } = cartContext
             setIsProcessing(true);
+            const { cart, user } = cartContext;
+
+            // request to server to return stripe checkout session url
             try {
                 const token = await getIdToken(user);
                 const response = await axios.post(url, { cart }, {
@@ -146,38 +159,38 @@ export default function Checkout () {
     }
 
     if (cartContext) {
-        const { cart, user } = cartContext;
-            return (
-                    <main>
-                        <h1>Checkout</h1>
-                        { isLoading ? ( <LoadingSpinner /> ) : (
-                            <div>
-                                <form onSubmit={handleSubmit}>
-                                    <div>
-                                        <h3>Billing Address</h3>
-                                        {renderAddressForm(billing, 'Billing')}
-                                    </div>
-                                    <div>
-                                        <h3>Shipping Address</h3>
-                                        {renderAddressForm(shipping, 'Shipping')}
-                                    </div>
-                                    <div>
-                                        <h3>Select Delivery Method</h3>
-                                        <select name="method" id="method" value={method} onChange={(evt) => handleSelectChange(evt)}>
-                                            <option value="">Select Option</option>
-                                            <option value="STANDARD">Standard</option>
-                                            <option value="EXPRESS">Express</option>
-                                            <option value="NEXT_DAY">Next Day</option>
-                                        </select>
-                                    </div>
-                                    <input type="submit" value={isProcessing ? 'Processing' : 'Continue to Payment'} />
-                                </form>
-                                <Link href='/cart'>Back to Cart</Link>
+        return (
+            <main>
+                <h1>Checkout</h1>
+                { isLoading ? ( <LoadingSpinner /> ) : (
+                    <div>
+                        <form onSubmit={handleSubmit}>
+                           <div>
+                                <h3>Billing Address</h3>
+                                {renderAddressForm(billing, 'Billing')}
                             </div>
-                        )}
-                    </main>
-                );
-            } else {
-                return <div>Error</div>
-            }
+                            <div>
+                                <h3>Shipping Address</h3>
+                                <button onClick={handleSameAsBilling}>Same as billing</button>
+                                {renderAddressForm(shipping, 'Shipping')}
+                            </div>
+                            <div>
+                                <h3>Select Delivery Method</h3>
+                                <select name="method" id="method" value={method} onChange={(evt) => handleSelectChange(evt)}>
+                                    <option value="">Select Option</option>
+                                    <option value="STANDARD">Standard</option>
+                                    <option value="EXPRESS">Express</option>
+                                    <option value="NEXT_DAY">Next Day</option>
+                                </select>
+                            </div>
+                            <input type="submit" value={isProcessing ? 'Processing' : 'Continue to Payment'} />
+                        </form>
+                        <Link href='/cart'>Back to Cart</Link>
+                    </div>
+                )}
+            </main>
+        );
+    } else {
+        return <div>Error</div>
+    }
 }
