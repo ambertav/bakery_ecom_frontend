@@ -1,18 +1,12 @@
+import axios from 'axios';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getIdToken } from 'firebase/auth';
 
-import CartQuery from '../../components/CartQuery';
-import CheckoutButton from '@/components/CheckoutButton';
+import { useCartContext } from '../../components/CartContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
-interface AddressType {
-    firstName: string;
-    lastName: string;
-    address: string;
-    city: string;
-    state: string;
-    zip: string;
-}
+import { ShoppingCart, AddressType } from '../../../types/types';
 
 const initAddress : AddressType = {
     firstName: '',
@@ -24,9 +18,22 @@ const initAddress : AddressType = {
 }
 
 export default function Checkout () {
+    const cartContext = useCartContext();
+
     const [ billing, setBilling ] = useState <AddressType> (initAddress);
     const [ shipping, setShipping ] = useState <AddressType> (initAddress);
     const [ method, setMethod ] = useState <string> ('');
+
+    const [ isProcessing, setIsProcessing ] = useState<boolean>(false);
+    const [ isLoading, setIsLoading ] = useState <boolean> (true);
+
+    const url = 'http://127.0.0.1:5000/create-checkout-session';
+
+    useEffect(() => {
+        setTimeout(() => {
+            setIsLoading(false);
+        }, 750);
+    }, []);
 
     function renderAddressForm (formState : AddressType, formName : string) {
         return (
@@ -94,7 +101,7 @@ export default function Checkout () {
                     />
                 </div>
             </>
-        )
+        );
     }
 
     function handleInputChange (evt : React.ChangeEvent<HTMLInputElement>, formName: string) {
@@ -117,45 +124,60 @@ export default function Checkout () {
         setMethod(evt.target.value);
     }
 
+    async function handleSubmit (evt : React.FormEvent) {
+        evt.preventDefault();
+        if (cartContext) {
+            const { cart, user } = cartContext
+            setIsProcessing(true);
+            try {
+                const token = await getIdToken(user);
+                const response = await axios.post(url, { cart }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    withCredentials: true,
+                });
+                window.location = response.data.checkout_url;
+            } catch (error) {
+                console.error('Error creating Checkout session:', error);
+                setIsProcessing(false);
+            }
+        }
+    }
 
-    return (
-        <CartQuery>
-            {(cart, isLoading) => (
-                <main>
-                    <h1>Checkout</h1>
-                    { isLoading ? ( <LoadingSpinner /> ) : (
-                        <div>
-                            <form>
-                                <div>
-                                    <h3>Billing Address</h3>
-                                    {renderAddressForm(billing, 'Billing')}
-                                </div>
-                                <div>
-                                    <h3>Shipping Address</h3>
-                                    {renderAddressForm(shipping, 'Shipping')}
-                                </div>
-                                <div>
-                                    <h3>Select Delivery Method</h3>
-                                    <select name="method" id="method" value={method} onChange={(evt) => handleSelectChange(evt)}>
-                                        <option value="">Select Option</option>
-                                        <option value="STANDARD">Standard</option>
-                                        <option value="EXPRESS">Express</option>
-                                        <option value="NEXT_DAY">Next Day</option>
-                                    </select>
-                                </div>
-                            </form>
-                            <Link href='/cart'>Back to Cart</Link>
+    if (cartContext) {
+        const { cart, user } = cartContext;
+            return (
+                    <main>
+                        <h1>Checkout</h1>
+                        { isLoading ? ( <LoadingSpinner /> ) : (
                             <div>
-                                {cart !== null && cart.length > 0 ? (
-                                    <CheckoutButton cart={cart} />
-                                ) : (
-                                    ''
-                                )}
+                                <form onSubmit={handleSubmit}>
+                                    <div>
+                                        <h3>Billing Address</h3>
+                                        {renderAddressForm(billing, 'Billing')}
+                                    </div>
+                                    <div>
+                                        <h3>Shipping Address</h3>
+                                        {renderAddressForm(shipping, 'Shipping')}
+                                    </div>
+                                    <div>
+                                        <h3>Select Delivery Method</h3>
+                                        <select name="method" id="method" value={method} onChange={(evt) => handleSelectChange(evt)}>
+                                            <option value="">Select Option</option>
+                                            <option value="STANDARD">Standard</option>
+                                            <option value="EXPRESS">Express</option>
+                                            <option value="NEXT_DAY">Next Day</option>
+                                        </select>
+                                    </div>
+                                    <input type="submit" value={isProcessing ? 'Processing' : 'Continue to Payment'} />
+                                </form>
+                                <Link href='/cart'>Back to Cart</Link>
                             </div>
-                        </div>
-                    )}
-        </main>
-      )}
-    </CartQuery>
-  );
+                        )}
+                    </main>
+                );
+            } else {
+                return <div>Error</div>
+            }
 }
