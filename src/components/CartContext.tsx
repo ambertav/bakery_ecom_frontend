@@ -50,7 +50,7 @@ export const CartContextProvider = ({ children }: CartContextProviderProps) => {
             }
         }
         fetchShoppingCart();
-    }, [user, cart]);
+    }, [user]);
 
     async function handleRemove (id : number) {
         try {
