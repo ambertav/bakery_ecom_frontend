@@ -29,7 +29,7 @@ export default function Checkout () {
     const [ isProcessing, setIsProcessing ] = useState<boolean>(false);
 
     // url endpoint for stripe checkout page creation
-    const url = 'http://127.0.0.1:5000/create-checkout-session';
+    const url = 'http://127.0.0.1:5000/user/order/create-checkout-session';
 
     useEffect(() => {
         setTimeout(() => {
@@ -140,11 +140,11 @@ export default function Checkout () {
         if (cartContext) {
             setIsProcessing(true);
             const { cart, user } = cartContext;
-
-            // request to server to return stripe checkout session url
+            // request to server to return stripe checkout session url + create user's order instance
             try {
                 const token = await getIdToken(user);
-                const response = await axios.post(url, { cart }, {
+                // pass in cart info and form submission to server request
+                const response = await axios.post(url, { cart, billing, shipping, method }, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -183,7 +183,7 @@ export default function Checkout () {
                                     <option value="NEXT_DAY">Next Day</option>
                                 </select>
                             </div>
-                            <input type="submit" value={isProcessing ? 'Processing' : 'Continue to Payment'} />
+                            <input type="submit" value={isProcessing ? 'Processing...' : 'Continue to Payment'} />
                         </form>
                         <Link href='/cart'>Back to Cart</Link>
                     </div>
