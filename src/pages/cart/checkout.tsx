@@ -38,22 +38,24 @@ export default function Checkout () {
         const fetchAddresses = async () => {
             if (cartContext) {
                 const { user } = cartContext;
-                try {
-                    const token = await getIdToken(user)
-                    const response = await axios.get(url + 'get-address', {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                        withCredentials: true,
-                    });
-
-                    if (response.status === 200) {
-                        const { billAddress, shipAddress } = response.data || {};
-                        setExistingBilling(billAddress as AddressType[] || null);
-                        setExistingShipping(shipAddress as AddressType[] || null);
+                if (user) {
+                    try {
+                        const token = await getIdToken(user)
+                        const response = await axios.get(url + 'get-address', {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                            withCredentials: true,
+                        });
+    
+                        if (response.status === 200) {
+                            const { billAddress, shipAddress } = response.data || {};
+                            setExistingBilling(billAddress as AddressType[] || null);
+                            setExistingShipping(shipAddress as AddressType[] || null);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching billing addresses:', error);
                     }
-                } catch (error) {
-                    console.error('Error fetching billing addresses:', error);
                 }
             }
         }
@@ -161,6 +163,27 @@ export default function Checkout () {
         setMethod(evt.target.value);
     }
 
+    function handleCheckboxChange (evt : React.ChangeEvent<HTMLInputElement>, type : string) {
+        // determines if address checked is billing
+        if (type === 'billing') {
+            if (evt.target.checked && existingBilling) {
+                // value is set to index of existingBilling array, sets form's billing state to the existing one
+                setBilling(existingBilling[parseInt(evt.target.value)])
+            } else {
+                // clears out form's billing state when checkbox is unchecked
+                setBilling(initAddress);
+            }
+        }
+        // performs the same logic if shipping
+        if (type === 'shipping') {
+            if (evt.target.checked && existingShipping) {
+                setShipping(existingShipping[parseInt(evt.target.value)])
+            } else {
+                setShipping(initAddress);
+            }
+        }
+    }
+
     async function handleSubmit (evt : React.FormEvent) {
         evt.preventDefault();
         if (cartContext) {
@@ -196,11 +219,12 @@ export default function Checkout () {
                                 {existingBilling !== null && existingBilling.length > 0 ? (
                                         <div>
                                             <h5>Select an existing address:</h5>
-                                            {existingBilling.map((address, key) => (
-                                                <label key={key}>
+                                            {existingBilling.map((address, index) => (
+                                                <label key={index}>
                                                     <input
                                                         type="checkbox"
-                                                        value={key}
+                                                        value={index}
+                                                        onChange={(evt) => {handleCheckboxChange(evt, 'billing')}}
                                                     />
                                                     {address.firstName} {address.lastName} <br />
                                                     {address.street} <br />
@@ -219,11 +243,12 @@ export default function Checkout () {
                                 {existingShipping !== null && existingShipping.length > 0 ? (
                                         <div>
                                             <h5>Select an existing address:</h5>
-                                            {existingShipping.map((address, key) => (
-                                                <label key={key}>
+                                            {existingShipping.map((address, index) => (
+                                                <label key={index}>
                                                     <input
                                                         type="checkbox"
-                                                        value={key}
+                                                        value={index}
+                                                        onChange={(evt) => {handleCheckboxChange(evt, 'shipping')}}
                                                     />
                                                     {address.firstName} {address.lastName} <br />
                                                     {address.street} <br />
