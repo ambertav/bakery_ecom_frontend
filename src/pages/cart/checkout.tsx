@@ -12,7 +12,7 @@ import { AddressType } from '../../../types/types';
 const initAddress : AddressType = {
     firstName: '',
     lastName: '',
-    address: '',
+    street: '',
     city: '',
     state: '',
     zip: '',
@@ -23,18 +23,44 @@ export default function Checkout () {
 
     const [ billing, setBilling ] = useState <AddressType> (initAddress);
     const [ shipping, setShipping ] = useState <AddressType> (initAddress);
+    const [ existingBilling, setExistingBilling ] = useState <AddressType[] | null> (null);
+    const [ existingShipping, setExistingShipping ] = useState  <AddressType[] | null> (null);
     const [ method, setMethod ] = useState <string> ('');
 
     const [ isLoading, setIsLoading ] = useState <boolean> (true);
     const [ isProcessing, setIsProcessing ] = useState<boolean>(false);
 
     // url endpoint for stripe checkout page creation
-    const url = 'http://127.0.0.1:5000/user/order/create-checkout-session';
+    const url = 'http://127.0.0.1:5000/user/';
 
+    // retrieves user's saved addresses
     useEffect(() => {
+        const fetchAddresses = async () => {
+            if (cartContext) {
+                const { user } = cartContext;
+                try {
+                    const token = await getIdToken(user)
+                    const response = await axios.get(url + 'get-address', {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        withCredentials: true,
+                    });
+
+                    if (response.status === 200) {
+                        const { billAddress, shipAddress } = response.data || {};
+                        setExistingBilling(billAddress as AddressType[] || null);
+                        setExistingShipping(shipAddress as AddressType[] || null);
+                    }
+                } catch (error) {
+                    console.error('Error fetching billing addresses:', error);
+                }
+            }
+        }
+        fetchAddresses();
         setTimeout(() => {
             setIsLoading(false);
-        }, 750);
+        }, 1000);
     }, []);
 
     function renderAddressForm (formState : AddressType, formName : string) {
@@ -62,12 +88,12 @@ export default function Checkout () {
                     />
                 </div>
                 <div>
-                    <label htmlFor='address'>Address:</label>
+                    <label htmlFor='street'>Street:</label>
                     <input
                         type='text'
-                        id='address'
-                        name='address'
-                        value={formState.address}
+                        id='street'
+                        name='street'
+                        value={formState.street}
                         onChange={(evt) => handleInputChange(evt, formName)}
                     />
                 </div>
@@ -144,7 +170,7 @@ export default function Checkout () {
             try {
                 const token = await getIdToken(user);
                 // pass in cart info and form submission to server request
-                const response = await axios.post(url, { cart, billing, shipping, method }, {
+                const response = await axios.post(url + 'order/create-checkout-session', { cart, billing, shipping, method }, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -167,11 +193,46 @@ export default function Checkout () {
                         <form onSubmit={handleSubmit}>
                            <div>
                                 <h3>Billing Address</h3>
+                                {existingBilling !== null && existingBilling.length > 0 ? (
+                                        <div>
+                                            <h5>Select an existing address:</h5>
+                                            {existingBilling.map((address, key) => (
+                                                <label key={key}>
+                                                    <input
+                                                        type="checkbox"
+                                                        value={key}
+                                                    />
+                                                    {address.firstName} {address.lastName} <br />
+                                                    {address.street} <br />
+                                                    {address.city}, {address.state} {address.zip}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    ) : ('') }
+
                                 {renderAddressForm(billing, 'Billing')}
                             </div>
                             <div>
                                 <h3>Shipping Address</h3>
                                 <button onClick={handleSameAsBilling}>Same as billing</button>
+
+                                {existingShipping !== null && existingShipping.length > 0 ? (
+                                        <div>
+                                            <h5>Select an existing address:</h5>
+                                            {existingShipping.map((address, key) => (
+                                                <label key={key}>
+                                                    <input
+                                                        type="checkbox"
+                                                        value={key}
+                                                    />
+                                                    {address.firstName} {address.lastName} <br />
+                                                    {address.street} <br />
+                                                    {address.city}, {address.state} {address.zip}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    ) : ('') }
+
                                 {renderAddressForm(shipping, 'Shipping')}
                             </div>
                             <div>
