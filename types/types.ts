@@ -38,4 +38,5 @@ export interface AddressType {
     city: string;
     state: string;
     zip: string;
+    type: string;
 }
