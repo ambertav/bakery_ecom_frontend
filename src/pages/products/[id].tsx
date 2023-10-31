@@ -18,13 +18,13 @@ export default function ProductShow () {
     });
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
 
-    const url = 'http://127.0.0.1:5000/';
     const { id } = router.query;
+    const url = `http://127.0.0.1:5000/product/${id}`;
     
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await axios.get(url + 'product/' + id);
+                const response = await axios.get(url);
                 if (response.status === 200) setProduct(response.data.product);
             } catch (error) {
                 console.error('Error fetching product: ', error);
