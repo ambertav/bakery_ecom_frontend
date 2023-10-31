@@ -18,11 +18,11 @@ export default function Account () {
     const url = 'http://127.0.0.1:5000/user/';
 
     useEffect(() => {
-        const fetchOrders = async () => {
+        const fetchRecentOrders = async () => {
             if (user) {
                 try {
                     const token = await getIdToken(user);
-                    const response = await axios.get(url + 'order/', {
+                    const response = await axios.get(url + 'order/?recent=true', {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
@@ -58,7 +58,7 @@ export default function Account () {
                 }
             }
         }
-        fetchOrders();
+        fetchRecentOrders();
         fetchAddress();
         setTimeout(() => {
             setIsLoading(false);
@@ -75,17 +75,20 @@ export default function Account () {
                 <h1>this is the account page</h1>
                 <div>
                     {orders ? (
-                        <ul>
-                        {orders!.map((o, index) => (
-                            <li key={index}>
-                                <p>{ o.id }</p>
-                                <p>{ o.date }</p>
-                                <p>{ o.totalPrice }</p>
-                                <p>{ o.status }</p>
-                                <Link href={`/account/orders/${o.id}`}>View order</Link>
-                            </li>
-                        ))}
-                        </ul>
+                        <>
+                            <Link href={'/account/orders'}>View All Orders</Link>
+                            <ul>
+                            {orders!.map((o, index) => (
+                                <li key={index}>
+                                    <p>{ o.id }</p>
+                                    <p>{ o.date }</p>
+                                    <p>{ o.totalPrice }</p>
+                                    <p>{ o.status }</p>
+                                    <Link href={`/account/orders/${o.id}`}>View Order</Link>
+                                </li>
+                            ))}
+                            </ul>
+                        </>
                     ) : (
                         'no orders'
                     )}
