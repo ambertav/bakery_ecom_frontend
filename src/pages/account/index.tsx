@@ -82,7 +82,7 @@ export default function Account () {
                                 <p>{ o.date }</p>
                                 <p>{ o.totalPrice }</p>
                                 <p>{ o.status }</p>
-                                <Link href='/account/orders/:id'></Link>
+                                <Link href={`/account/orders/${o.id}`}>View order</Link>
                             </li>
                         ))}
                         </ul>
