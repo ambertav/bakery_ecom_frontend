@@ -43,7 +43,7 @@ export default function OrderHistory () {
     function loaded () {
         return (
             <main>
-                <h1>this is the account page</h1>
+                <h1>Order History</h1>
                 <div>
                     {orders ? (
                         <ul>
