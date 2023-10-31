@@ -38,7 +38,6 @@ export interface AddressType {
     city: string;
     state: string;
     zip: string;
-    type: string;
 }
 
 export interface OrderType {
@@ -48,5 +47,4 @@ export interface OrderType {
     status: string;
     shippingMethod: string;
     paymentStatus: string;
-    address: AddressType;
 }
