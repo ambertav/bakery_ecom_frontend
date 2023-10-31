@@ -13,7 +13,7 @@ export default function Account () {
 
     const [ isLoading, setIsLoading ] = useState <boolean> (true);
     const [ orders, setOrders ] = useState <OrderType[] | null> (null);
-    const [ addresses, setAddresses ] = useState <AddressType[] | null> (null);
+    const [ address, setAddress ] = useState <AddressType | null> (null);
 
     const url = 'http://127.0.0.1:5000/user/';
 
@@ -34,40 +34,28 @@ export default function Account () {
                 }
             }
         }
-        const fetchAddress = async () => {
+        const fetchDefaultAddress = async () => {
             if (user) {
                 try {
                     const token = await getIdToken(user)
-                    const response = await axios.get(url + 'get-address', {
+                    const response = await axios.get(url + 'address/?default=true', {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
                         withCredentials: true,
                     });
-                    if (response.status === 200) {
-                        const { billAddress, shipAddress } = response.data || {}; 
-                        // merges types of addresses
-                        const allAddresses : AddressType[] = [...billAddress, ...shipAddress];
-                        // removes duplicate addresses
-                        const addressSet = new Set(allAddresses.map(serializeAddress));
-                         // parse back to json, creates array from set, and assigns to state
-                        setAddresses(Array.from(addressSet).map((str) => JSON.parse(str)));
-                    }
+                    if (response.status === 200) setAddress(response.data.addresses);
                 } catch (error) {
                     console.error('Error fetching billing addresses:', error);
                 }
             }
         }
         fetchRecentOrders();
-        fetchAddress();
+        fetchDefaultAddress();
         setTimeout(() => {
             setIsLoading(false);
         }, 1000);
     }, []);
-
-    function serializeAddress (address : AddressType) {
-        return JSON.stringify(address);
-    }
 
     function loaded () {
         return (
@@ -94,20 +82,17 @@ export default function Account () {
                     )}
                 </div>
                 <div>
-                    {addresses ? (
-                        <ul>
-                        {addresses!.map((a, index) => (
-                            <li key={index}>
-                                <p>{ a.firstName } { a.lastName }</p>
-                                <p>{ a.street }</p>
-                                <p>{ a.city }, { a.state } {a.zip}</p>
-                                <p>{ a.type }</p>
-                            </li>
-                        ))}
-                        </ul>
+                    <h4>Default Address</h4>
+                    {address ? (
+                        <div>
+                            <p>{ address && address.firstName } { address && address.lastName }</p>
+                            <p>{ address && address.street }</p>
+                            <p>{ address && address.city }, { address && address.state } { address && address.zip }</p>
+                        </div>
                     ) : (
-                        'no addresses'
+                        'no default address'
                     )}
+                    <Link href={'/account/address/manage'}>Manage All Addresses</Link>
                 </div>
             </main>
         );
