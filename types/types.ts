@@ -40,3 +40,13 @@ export interface AddressType {
     zip: string;
     type: string;
 }
+
+export interface OrderType {
+    id: number;
+    totalPrice: number;
+    date: string;
+    status: string;
+    shippingMethod: string;
+    paymentStatus: string;
+    address: AddressType;
+}
