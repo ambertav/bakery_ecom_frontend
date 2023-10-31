@@ -16,6 +16,7 @@ const initAddress : AddressType = {
     city: '',
     state: '',
     zip: '',
+    type: '',
 }
 
 export default function Checkout () {
