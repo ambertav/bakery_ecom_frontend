@@ -35,9 +35,6 @@ export default function Checkout () {
     const [ isNewBilling, setIsNewBilling ] = useState <boolean> (false);
     const [ showAddressOptions, setShowAddressOptions ] = useState <boolean> (false);
 
-    const [ buttonHTML, setButtomHTML ] = useState <string> ('Add new address');
-    const [ billingButtonHTML, setBillingButtomHTML ] = useState <string> ('Add new address');
-
     // url endpoint for stripe checkout page creation
     const url = 'http://127.0.0.1:5000/user/';
 
@@ -153,7 +150,7 @@ export default function Checkout () {
                                                         type="checkbox"
                                                         value={index}
                                                         onChange={(evt) => {handleCheckboxChange(evt, 'delivery')}}
-                                                        checked={address.default ? true :  false}
+                                                        checked={ shipping === address }
                                                     />
                                                     {address.firstName} {address.lastName} <br />
                                                     {address.street} <br />
@@ -198,7 +195,7 @@ export default function Checkout () {
                                                     type="checkbox"
                                                     value={index}
                                                     onChange={(evt) => {handleCheckboxChange(evt, 'billing')}}
-                                                    checked={address.default}
+                                                    checked={ billing === address }
                                                     />
                                                     {address.firstName} {address.lastName} <br />
                                                     {address.street} <br />
