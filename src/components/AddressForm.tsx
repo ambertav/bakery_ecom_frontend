@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { AddressType } from "../../types/types";
 
 interface AddressFormProps {
@@ -5,7 +6,26 @@ interface AddressFormProps {
     setFormState: (state : any) => void;
 }
 
+const initAddress : AddressType = {
+    id: 0,
+    firstName: '',
+    lastName: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    default: false
+}
+
 export default function AddressForm ({ formState, setFormState } : AddressFormProps) {
+
+
+    useEffect(() => {
+        function clearInput () {
+            setFormState(initAddress);
+        }
+        clearInput();
+    }, []);
 
     function handleInputChange (evt : React.ChangeEvent<HTMLInputElement>) {
         // updates corresponding state based on which form is being changed
@@ -17,7 +37,7 @@ export default function AddressForm ({ formState, setFormState } : AddressFormPr
     }
     
     return (
-        <form>
+        <>
             <div>
                 <label htmlFor='firstName'>First Name:</label>
                 <input
@@ -80,6 +100,6 @@ export default function AddressForm ({ formState, setFormState } : AddressFormPr
                     onChange={(evt) => handleInputChange(evt)}
                 />
             </div>
-        </form>
+        </>
     );
 }
