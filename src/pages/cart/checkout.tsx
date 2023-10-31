@@ -4,19 +4,21 @@ import { useState, useEffect } from 'react';
 import { getIdToken } from 'firebase/auth';
 
 import { useCartContext } from '../../components/CartContext';
+import  AddressForm  from '../../components/AddressForm';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 import { AddressType } from '../../../types/types';
 
 // empty address for state initialization
 const initAddress : AddressType = {
+    id: 0,
     firstName: '',
     lastName: '',
     street: '',
     city: '',
     state: '',
     zip: '',
-    type: '',
+    default: false
 }
 
 export default function Checkout () {
@@ -24,12 +26,17 @@ export default function Checkout () {
 
     const [ billing, setBilling ] = useState <AddressType> (initAddress);
     const [ shipping, setShipping ] = useState <AddressType> (initAddress);
-    const [ existingBilling, setExistingBilling ] = useState <AddressType[] | null> (null);
-    const [ existingShipping, setExistingShipping ] = useState  <AddressType[] | null> (null);
+    const [ existingAddresses, setExistingAddresses ] = useState <AddressType[] | null> (null);
     const [ method, setMethod ] = useState <string> ('');
 
     const [ isLoading, setIsLoading ] = useState <boolean> (true);
-    const [ isProcessing, setIsProcessing ] = useState<boolean>(false);
+    const [ isProcessing, setIsProcessing ] = useState <boolean>(false);
+    const [ isNewDelivery, setIsNewDelivery ] = useState <boolean> (false);
+    const [ isNewBilling, setIsNewBilling ] = useState <boolean> (false);
+    const [ showAddressOptions, setShowAddressOptions ] = useState <boolean> (false);
+
+    const [ buttonHTML, setButtomHTML ] = useState <string> ('Add new address');
+    const [ billingButtonHTML, setBillingButtomHTML ] = useState <string> ('Add new address');
 
     // url endpoint for stripe checkout page creation
     const url = 'http://127.0.0.1:5000/user/';
@@ -42,7 +49,7 @@ export default function Checkout () {
                 if (user) {
                     try {
                         const token = await getIdToken(user)
-                        const response = await axios.get(url + 'get-address', {
+                        const response = await axios.get(url + 'address/', {
                             headers: {
                                 Authorization: `Bearer ${token}`,
                             },
@@ -50,12 +57,11 @@ export default function Checkout () {
                         });
     
                         if (response.status === 200) {
-                            const { billAddress, shipAddress } = response.data || {};
-                            setExistingBilling(billAddress as AddressType[] || null);
-                            setExistingShipping(shipAddress as AddressType[] || null);
+                            setExistingAddresses(response.data.addresses);
+                            setShipping(response.data.addresses[0]);
                         }
                     } catch (error) {
-                        console.error('Error fetching billing addresses:', error);
+                        console.error('Error fetching addresses:', error);
                     }
                 }
             }
@@ -66,97 +72,19 @@ export default function Checkout () {
         }, 1000);
     }, []);
 
-    function renderAddressForm (formState : AddressType, formName : string) {
-        // to render both billing and shipping address forms
-        return (
-            <>
-                <div>
-                    <label htmlFor='firstName'>First Name:</label>
-                    <input
-                        type='text'
-                        id='name'
-                        name='firstName'
-                        value={formState.firstName}
-                        onChange={(evt) => handleInputChange(evt, formName)}
-                    />
-                    </div>
-                <div>
-                    <label htmlFor='lastName'>Last Name:</label>
-                    <input
-                        type='text'
-                        id='name'
-                        name='lastName'
-                        value={formState.lastName}
-                        onChange={(evt) => handleInputChange(evt, formName)}
-                    />
-                </div>
-                <div>
-                    <label htmlFor='street'>Street:</label>
-                    <input
-                        type='text'
-                        id='street'
-                        name='street'
-                        value={formState.street}
-                        onChange={(evt) => handleInputChange(evt, formName)}
-                    />
-                </div>
-                <div>
-                    <label htmlFor='city'>City:</label>
-                    <input
-                        type='text'
-                        id='city'
-                        name='city'
-                        value={formState.city}
-                        onChange={(evt) => handleInputChange(evt, formName)}
-                    />
-                </div>
-                <div>
-                    <label htmlFor='state'>State:</label>
-                    <input
-                        type='text'
-                        id='state'
-                        name='state'
-                        value={formState.state}
-                        onChange={(evt) => handleInputChange(evt, formName)}
-                    />
-                </div>
-                <div>
-                    <label htmlFor='zip'>Zip Code:</label>
-                    <input
-                        type='text'
-                        id='zip'
-                        name='zip'
-                        pattern='[0-9]{5}'
-                        title='Enter a valid 5 digit zip code'
-                        value={formState.zip}
-                        onChange={(evt) => handleInputChange(evt, formName)}
-                    />
-                </div>
-            </>
-        );
-    }
-
-    function handleInputChange (evt : React.ChangeEvent<HTMLInputElement>, formName: string) {
-        // updates corresponding state based on which form is being changed
-        const { name, value } = evt.target;
-        if (formName === 'Billing') {
-            setBilling((prevBilling) => ({
-                ...prevBilling,
-                [name]: value,
-            }));
-        }
-        if (formName === 'Shipping') {
-            setShipping((prevShipping) => ({
-                ...prevShipping,
-                [name]: value,
-            }));
-        }
-    }
-
-    function handleSameAsBilling (evt : React.MouseEvent<HTMLButtonElement>) {
+    function handleSameAsShipping (evt : React.ChangeEvent<HTMLSelectElement>) {
         // updates shipping state with billing state
         evt.preventDefault();
-        setShipping(billing);
+        if (evt.target.value === 'yes') {
+            setBilling(shipping);
+            setShowAddressOptions(false);
+            setIsNewBilling(false);
+        }
+        else {
+            setBilling(initAddress);
+            if (existingAddresses) setShowAddressOptions(true);
+            else setIsNewBilling(true);
+        }
     }
 
     function handleSelectChange (evt : React.ChangeEvent<HTMLSelectElement>) {
@@ -167,18 +95,18 @@ export default function Checkout () {
     function handleCheckboxChange (evt : React.ChangeEvent<HTMLInputElement>, type : string) {
         // determines if address checked is billing
         if (type === 'billing') {
-            if (evt.target.checked && existingBilling) {
+            if (evt.target.checked && existingAddresses) {
                 // value is set to index of existingBilling array, sets form's billing state to the existing one
-                setBilling(existingBilling[parseInt(evt.target.value)])
+                setBilling(existingAddresses[parseInt(evt.target.value)]);
             } else {
                 // clears out form's billing state when checkbox is unchecked
                 setBilling(initAddress);
             }
         }
         // performs the same logic if shipping
-        if (type === 'shipping') {
-            if (evt.target.checked && existingShipping) {
-                setShipping(existingShipping[parseInt(evt.target.value)])
+        if (type === 'delivery') {
+            if (evt.target.checked && existingAddresses) {
+                setShipping(existingAddresses[parseInt(evt.target.value)]);
             } else {
                 setShipping(initAddress);
             }
@@ -215,41 +143,17 @@ export default function Checkout () {
                 { isLoading ? ( <LoadingSpinner /> ) : (
                     <div>
                         <form onSubmit={handleSubmit}>
-                           <div>
-                                <h3>Billing Address</h3>
-                                {existingBilling !== null && existingBilling.length > 0 ? (
-                                        <div>
-                                            <h5>Select an existing address:</h5>
-                                            {existingBilling.map((address, index) => (
-                                                <label key={index}>
-                                                    <input
-                                                        type="checkbox"
-                                                        value={index}
-                                                        onChange={(evt) => {handleCheckboxChange(evt, 'billing')}}
-                                                    />
-                                                    {address.firstName} {address.lastName} <br />
-                                                    {address.street} <br />
-                                                    {address.city}, {address.state} {address.zip}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    ) : ('') }
-
-                                {renderAddressForm(billing, 'Billing')}
-                            </div>
                             <div>
-                                <h3>Shipping Address</h3>
-                                <button onClick={handleSameAsBilling}>Same as billing</button>
-
-                                {existingShipping !== null && existingShipping.length > 0 ? (
+                                <h3>Delivery Address</h3>
+                                { existingAddresses !== null && existingAddresses.length > 0 ? (
                                         <div>
-                                            <h5>Select an existing address:</h5>
-                                            {existingShipping.map((address, index) => (
+                                            { existingAddresses.map((address, index) => (
                                                 <label key={index}>
                                                     <input
                                                         type="checkbox"
                                                         value={index}
-                                                        onChange={(evt) => {handleCheckboxChange(evt, 'shipping')}}
+                                                        onChange={(evt) => {handleCheckboxChange(evt, 'delivery')}}
+                                                        checked={address.default ? true :  false}
                                                     />
                                                     {address.firstName} {address.lastName} <br />
                                                     {address.street} <br />
@@ -258,8 +162,11 @@ export default function Checkout () {
                                             ))}
                                         </div>
                                     ) : ('') }
-
-                                {renderAddressForm(shipping, 'Shipping')}
+                                    <button onClick={(evt) => {
+                                        evt.preventDefault();
+                                        setIsNewDelivery((prev) => !prev);
+                                    }}>{ isNewDelivery ? 'Remove address' : 'Add new address' }</button>
+                                    { isNewDelivery ? <AddressForm formState = {shipping} setFormState = {setShipping} /> : '' }
                             </div>
                             <div>
                                 <h3>Select Delivery Method</h3>
@@ -269,6 +176,42 @@ export default function Checkout () {
                                     <option value="EXPRESS">Express</option>
                                     <option value="NEXT_DAY">Next Day</option>
                                 </select>
+                            </div>
+                            <div>
+                                <h3>Billing Address</h3>
+                                <p>is Billing same as shipping?</p>
+                                <select
+                                    id="sameAsBilling"
+                                    name="sameAsBilling"
+                                    defaultValue=""
+                                    onChange={(evt) => (handleSameAsShipping(evt))}
+                                    >
+                                        <option value=""></option>
+                                        <option value="yes">Yes</option>
+                                        <option value="no">No</option>
+                                </select>
+                                {showAddressOptions && existingAddresses ? (
+                                    <div>
+                                        { existingAddresses.map((address, index) => (
+                                            <label key={index}>
+                                                <input
+                                                    type="checkbox"
+                                                    value={index}
+                                                    onChange={(evt) => {handleCheckboxChange(evt, 'billing')}}
+                                                    checked={address.default}
+                                                    />
+                                                    {address.firstName} {address.lastName} <br />
+                                                    {address.street} <br />
+                                                    {address.city}, {address.state} {address.zip}
+                                            </label>
+                                        ))}
+                                    </div>
+                                ) : ('')}
+                                <button onClick={(evt) => {
+                                    evt.preventDefault();
+                                    setIsNewBilling((prev) => !prev);
+                                }}>{ isNewBilling ? 'Remove address' : 'Add new address' }</button>
+                                { isNewBilling ? <AddressForm formState = {shipping} setFormState = {setShipping} /> : '' }
                             </div>
                             <input type="submit" value={isProcessing ? 'Processing...' : 'Continue to Payment'} />
                         </form>
