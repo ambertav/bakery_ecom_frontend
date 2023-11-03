@@ -3,7 +3,7 @@ import { getIdToken } from 'firebase/auth';
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/app/firebase/AuthContext';
-import { ProductType } from '../../../types/types';
+import { ProductType, CartItem, ShoppingCart } from '../../../types/types';
 
 import Product from '@/components/Product';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -36,16 +36,20 @@ export default function ProductShow () {
         }, 750);
     }, []);
 
+    function generateUniqueId () {
+        const now = new Date();
+        return now.getTime() + now.getMilliseconds(); // gets timestamp id
+    }
+
     async function handleAddToCart (evt: FormEvent<HTMLFormElement>) {
         evt.preventDefault();
         const data = {
-            id: product?.id,
+            id: product!.id,
             qty: formState.qty
         }
-        // if no user, redirect to login page (for now)
-        if (!user) router.push('/login');
-        // if user, make req to /cart/create to create cart item for user
-        else {
+
+        if (user) {
+            // if user, make req to /cart/create to create cart item for user
             try {
                 const token = await getIdToken(user);
                 const response = await axios.post(url + '/user/cart/add', data, {
@@ -62,8 +66,30 @@ export default function ProductShow () {
             } catch (error) {
                 console.error('Error adding to cart: ', error);
             }
-        }
+        } else {
+            // if no user, add cart item to local storage
+            const localStorageCart : ShoppingCart = JSON.parse(localStorage.getItem('cart') || '[]');
 
+            const id = generateUniqueId(); // generate an id for the new cart item
+
+            const newItem : CartItem = {
+                id,
+                productId: data.id,
+                name: product!.name,
+                image: product!.image,
+                price: product!.price,
+                quantity: data.qty,
+            }
+
+            // checks if product is already in cart
+            const existingIndex = localStorageCart.findIndex(item => item.productId === newItem.productId);
+
+            if (existingIndex !== -1) localStorageCart[existingIndex].quantity += data.qty; // if found, update quantity
+            else localStorageCart.push(newItem); // else add to local storage
+
+            localStorage.setItem('cart', JSON.stringify(localStorageCart));
+            console.log('Local storage success');
+        }
     }
 
 
