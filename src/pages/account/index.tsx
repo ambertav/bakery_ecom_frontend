@@ -15,7 +15,7 @@ export default function Account () {
     const [ orders, setOrders ] = useState <OrderType[] | null> (null);
     const [ address, setAddress ] = useState <AddressType | null> (null);
 
-    const url = 'http://127.0.0.1:5000/user/';
+    const url = 'http://127.0.0.1:5000/api/';
 
     useEffect(() => {
         const fetchRecentOrders = async () => {

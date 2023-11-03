@@ -25,7 +25,7 @@ export default function Access (props : AccessProps) {
         confirm_password: '',
     });
     const [ errorMessage, setErrorMessage ] = useState<string>('');
-    const url = 'http://127.0.0.1:5000/user';
+    const url = 'http://127.0.0.1:5000/api/user';
 
     function formVerification(password: string, confirm: string): string | undefined {
         if (password !== confirm) {

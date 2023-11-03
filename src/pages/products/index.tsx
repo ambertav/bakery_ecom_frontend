@@ -8,7 +8,7 @@ import Product from '@/components/Product';
 export default function ProductIndex () {
     const [ products, setProducts ] = useState<ProductType[] | null>(null);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
-    const url = 'http://127.0.0.1:5000/product';
+    const url = 'http://127.0.0.1:5000/api/product';
 
     useEffect(() => {
         const fetchProducts = async () => {

@@ -15,7 +15,7 @@ export default function ManageAddress () {
     const [ isLoading, setIsLoading ] = useState <boolean> (true);
     const [ addresses, setAddresses ] = useState <AddressType[] | null> (null);
 
-    const url = 'http://127.0.0.1:5000/user/address/';
+    const url = 'http://127.0.0.1:5000/api/address/';
 
     useEffect(() => {
         const fetchAddresses = async () => {

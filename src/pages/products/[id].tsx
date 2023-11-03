@@ -19,7 +19,7 @@ export default function ProductShow () {
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
 
     const { id } = router.query;
-    const url = 'http://127.0.0.1:5000/';
+    const url = 'http://127.0.0.1:5000/api/';
     
     useEffect(() => {
         const fetchProduct = async () => {
@@ -52,7 +52,7 @@ export default function ProductShow () {
             // if user, make req to /cart/create to create cart item for user
             try {
                 const token = await getIdToken(user);
-                const response = await axios.post(url + '/user/cart/add', data, {
+                const response = await axios.post(url + 'cart/add', data, {
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,

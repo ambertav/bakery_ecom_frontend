@@ -19,7 +19,7 @@ export default function OrderDetail () {
     const [ address, setAddress ] = useState <AddressType | null> (null);
     const [ items, setItems ] = useState <ShoppingCart | null > (null);
 
-    const url = `http://127.0.0.1:5000/user/order/${id}`;
+    const url = `http://127.0.0.1:5000/api/order/${id}`;
 
 
     useEffect(() => {

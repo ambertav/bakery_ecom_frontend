@@ -30,7 +30,7 @@ export const CartContextProvider = ({ children }: CartContextProviderProps) => {
     const [ cart, setCart ] = useState<ShoppingCart | null>(null);
     const [ error, setError ] = useState<Error | null>(null);
 
-    const url = 'http://127.0.0.1:5000/user/cart/';
+    const url = 'http://127.0.0.1:5000/api/cart/';
 
     useEffect(() => {
         const fetchShoppingCart = async () => {

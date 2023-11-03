@@ -36,7 +36,7 @@ export default function Checkout () {
     const [ showAddressOptions, setShowAddressOptions ] = useState <boolean> (false);
 
     // url endpoint for stripe checkout page creation
-    const url = 'http://127.0.0.1:5000/user/';
+    const url = 'http://127.0.0.1:5000/api/';
 
     // retrieves user's saved addresses
     useEffect(() => {
