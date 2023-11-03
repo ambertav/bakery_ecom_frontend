@@ -16,7 +16,7 @@ export default function Cart() {
     }, []);
 
     if (cartContext) {
-        const { cart, handleRemove, updateQuantity } = cartContext;
+        const { cart, user, handleRemove, updateQuantity } = cartContext;
         let total : number = 0;
 
         return (
@@ -52,7 +52,7 @@ export default function Cart() {
                         </ul>
                         { total > 0 ? ( <div>Total price: {total.toFixed(2)}</div> ) : ( '' )}
                         { cart !== null && cart.length > 0 ? (
-                            <Link href='/cart/checkout'>Checkout</Link>
+                            <Link href={ user ? '/cart/checkout' : '/login' }>Checkout</Link>
                         ) : ( '' )}
                     </div>
                     )}

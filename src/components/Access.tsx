@@ -5,6 +5,8 @@ import { useRouter } from 'next/router';
 import { createUserWithEmailAndPassword, getIdToken, UserCredential, User } from '@firebase/auth';
 import { auth } from '../app/firebase/firebaseConfig';
 
+import { ShoppingCart } from '../../types/types';
+
 // type for signup and login props
 interface AccessProps {
     method: (email: string, password: string) => Promise<User | null>;
@@ -43,12 +45,21 @@ export default function Access (props : AccessProps) {
 
     const handleSubmit = async (evt: FormEvent) => {
         evt.preventDefault();
-        const submitInput = router.pathname === '/signup' ? formInput.name : '';
-        // password match
+        // password match for signup
         if (router.pathname === 'signup') {
             const message = formVerification(formInput.password, formInput.confirm_password);
             if (message) return setErrorMessage(message);
         }
+        
+        // if signup, send user name over to backend for creation, firebase_uid comes via token
+        const name = router.pathname === '/signup' ? formInput.name : '';
+        const localStorageCart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+        // passing in localStorageCart for cart item creation and association with user upon signup or login
+        const submitBody = {
+            name,
+            localStorageCart,
+        };
 
         try {
             // signup or login user with firebase
@@ -58,7 +69,7 @@ export default function Access (props : AccessProps) {
                     // get token
                     const token = await getIdToken(user);
                     // send token and user name to backend
-                    const response = await axios.post(url + router.pathname, submitInput, {
+                    const response = await axios.post(url + router.pathname, submitBody, { 
                         headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
@@ -66,7 +77,10 @@ export default function Access (props : AccessProps) {
                         withCredentials: true,
                     });
                     // redirect to main page
-                    if (response.status === 201 || response.status === 200) router.push('/');
+                    if (response.status === 201 || response.status === 200)  {
+                        localStorage.removeItem('cart'); // removes items from cart once created in database
+                        router.push('/');
+                    }
                 }
             } catch (error) {
                 if (isAxiosError(error) && error.response) {
