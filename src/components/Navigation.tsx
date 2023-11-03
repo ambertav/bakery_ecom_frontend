@@ -6,17 +6,17 @@ function Navigation () {
     return (
         <nav>
             <ul>
-                 <Link href='/products'>Browse Bakery</Link>
+                <li><Link href='/products'>Browse Bakery</Link></li>
+                <li><Link href='/cart'>Cart</Link></li>
                 {user ? (
                     <>
-                        <Link href='/account'>Account</Link>
-                        <Link href='/cart'>Cart</Link>
-                        <Link href='/logout'>Logout</Link>
+                        <li><Link href='/account'>Account</Link></li>
+                        <li><Link href='/logout'>Logout</Link></li>
                     </>
                 ) : (
                     <>
-                        <Link href='/signup'>Signup</Link>
-                        <Link href='/login'>Login</Link>
+                        <li><Link href='/signup'>Signup</Link></li>
+                        <li><Link href='/login'>Login</Link></li>
                     </>
                 )}
             </ul>
