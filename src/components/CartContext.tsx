@@ -47,43 +47,67 @@ export const CartContextProvider = ({ children }: CartContextProviderProps) => {
                 } catch (error) {
                     console.error('Error fetching shopping cart: ', error);
                 }
+            } else {
+                // get and parse cart from local storage
+                const localStorageCart : ShoppingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+                setCart(localStorageCart);
             }
         }
         fetchShoppingCart();
     }, [user]);
 
     async function handleRemove (id : number) {
-        try {
-            const token = await getIdToken(user);
-            const response = await axios.delete(url + id + '/delete', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true
-            });
-            if (response.status === 200) router.reload();
-        } catch (error) {
-            console.error('Error removing from cart: ', error);
-        } 
+        if (user) {
+            try {
+                const token = await getIdToken(user);
+                const response = await axios.delete(url + id + '/delete', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    withCredentials: true
+                });
+                if (response.status === 200) router.reload();
+            } catch (error) {
+                console.error('Error removing from cart: ', error);
+            } 
+        } else {
+            const localStorageCart : ShoppingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const itemIndex = localStorageCart.findIndex(item => item.id === id); // find index of the item to remove
+            if (itemIndex !== -1) {
+                localStorageCart.splice(itemIndex, 1); // remove from local storage
+                localStorage.setItem('cart', JSON.stringify(localStorageCart));
+                router.reload();
+            }
+        }
     }
 
     async function updateQuantity (action : 'minus' | 'plus', id : number, quantity : number) {
         let newQty = quantity;
         if (action === 'minus') newQty--;
         else if (action === 'plus') newQty++;
-        try {
-            const token = await getIdToken(user);
-            const response = await axios.put(url + id + '/update', { newQty }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true
-            });
-            if (response.status === 200) router.reload();
-        } catch (error) {
-            console.error('Error updating cart: ', error);
-        } 
+        if (user) {
+            try {
+                const token = await getIdToken(user);
+                const response = await axios.put(url + id + '/update', { newQty }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    withCredentials: true
+                });
+                if (response.status === 200) router.reload();
+            } catch (error) {
+                console.error('Error updating cart: ', error);
+            } 
+        } else {
+            const localStorageCart : ShoppingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const itemIndex = localStorageCart.findIndex(item => item.id === id); // find index of the item to update
+            if (itemIndex !== -1) {
+                localStorageCart[itemIndex].quantity = newQty;
+                localStorage.setItem('cart', JSON.stringify(localStorageCart));
+                router.reload();
+            }
+        }
     }
 
     return (
