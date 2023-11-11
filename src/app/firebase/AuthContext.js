@@ -17,6 +17,7 @@ export const AuthContextProvider = ({ children }) => {
         const unsubscribe = auth.onAuthStateChanged((currentUser) => {
             setCurrentUser(currentUser);
         });
+
         // clean up after unmount
         return () => unsubscribe();
     }, []);

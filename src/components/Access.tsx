@@ -1,11 +1,8 @@
-import axios from 'axios';
+import axios from '../utilities/axiosConfig';
 import { FormData, ErrorResponse } from "../../types/types";
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
-import { createUserWithEmailAndPassword, getIdToken, UserCredential, User } from '@firebase/auth';
-import { auth } from '../app/firebase/firebaseConfig';
-
-import { ShoppingCart } from '../../types/types';
+import { User } from '@firebase/auth';
 
 // type for signup and login props
 interface AccessProps {
@@ -25,7 +22,6 @@ export default function Access (props : AccessProps) {
         confirm_password: '',
     });
     const [ errorMessage, setErrorMessage ] = useState<string>('');
-    const url = 'http://127.0.0.1:5000/api/user';
 
     function formVerification(password: string, confirm: string): string | undefined {
         if (password !== confirm) {
@@ -66,15 +62,10 @@ export default function Access (props : AccessProps) {
             const user = await props.method(formInput.email, formInput.password);
             try {
                 if (user) {
-                    // get token
-                    const token = await getIdToken(user);
-                    // send token and user name to backend
-                    const response = await axios.post(url + router.pathname, submitBody, { 
+                    const response = await axios.post('user' + router.pathname, submitBody, { 
                         headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
                         },
-                        withCredentials: true,
                     });
                     // redirect to main page
                     if (response.status === 201 || response.status === 200)  {

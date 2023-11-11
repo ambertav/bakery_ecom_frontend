@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../../utilities/axiosConfig';
 import { useState, useEffect } from 'react';
 import { ProductType } from '../../../types/types';
 
@@ -8,12 +8,11 @@ import Product from '@/components/Product';
 export default function ProductIndex () {
     const [ products, setProducts ] = useState<ProductType[] | null>(null);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
-    const url = 'http://127.0.0.1:5000/api/product';
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get(url);
+                const response = await axios.get('product');
                 if (response.status === 200) {
                     const { products } = response.data;
                     setProducts(products);

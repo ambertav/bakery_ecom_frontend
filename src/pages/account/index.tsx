@@ -1,6 +1,5 @@
-import axios from 'axios';
+import axios from '../../utilities/axiosConfig';
 import Link from 'next/link';
-import { getIdToken, User } from 'firebase/auth';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/firebase/AuthContext';
 
@@ -15,19 +14,11 @@ export default function Account () {
     const [ orders, setOrders ] = useState <OrderType[] | null> (null);
     const [ address, setAddress ] = useState <AddressType | null> (null);
 
-    const url = 'http://127.0.0.1:5000/api/';
-
     useEffect(() => {
         const fetchRecentOrders = async () => {
             if (user) {
                 try {
-                    const token = await getIdToken(user);
-                    const response = await axios.get(url + 'order/?recent=true', {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                        withCredentials: true,
-                    });
+                    const response = await axios.get('order/?recent=true');
                     if (response.status === 200) setOrders(response.data.orders);
                 } catch (error) {
                     console.error('Error fetching order history: ', error);
@@ -37,13 +28,7 @@ export default function Account () {
         const fetchDefaultAddress = async () => {
             if (user) {
                 try {
-                    const token = await getIdToken(user)
-                    const response = await axios.get(url + 'address/?default=true', {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                        withCredentials: true,
-                    });
+                    const response = await axios.get('address/?default=true');
                     if (response.status === 200) setAddress(response.data.addresses);
                 } catch (error) {
                     console.error('Error fetching billing addresses:', error);

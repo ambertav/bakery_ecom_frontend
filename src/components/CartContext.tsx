@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios from '../utilities/axiosConfig';
 import { useRouter } from 'next/router';
-import { getIdToken, User } from 'firebase/auth';
+import { User } from 'firebase/auth';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '@/app/firebase/AuthContext';
 import { ShoppingCart } from '../../types/types';
@@ -30,19 +30,11 @@ export const CartContextProvider = ({ children }: CartContextProviderProps) => {
     const [ cart, setCart ] = useState<ShoppingCart | null>(null);
     const [ error, setError ] = useState<Error | null>(null);
 
-    const url = 'http://127.0.0.1:5000/api/cart/';
-
     useEffect(() => {
         const fetchShoppingCart = async () => {
             if (user) {
                 try {
-                    const token = await getIdToken(user);
-                    const response = await axios.get(url, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                        withCredentials: true,
-                    });
+                    const response = await axios.get('cart/');
                     if (response.status === 200) setCart(response.data.shopping_cart);
                 } catch (error) {
                     console.error('Error fetching shopping cart: ', error);
@@ -59,13 +51,7 @@ export const CartContextProvider = ({ children }: CartContextProviderProps) => {
     async function handleRemove (id : number) {
         if (user) {
             try {
-                const token = await getIdToken(user);
-                const response = await axios.delete(url + id + '/delete', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    withCredentials: true
-                });
+                const response = await axios.delete(`cart/${id}/delete`);
                 if (response.status === 200) router.reload();
             } catch (error) {
                 console.error('Error removing from cart: ', error);
@@ -87,13 +73,10 @@ export const CartContextProvider = ({ children }: CartContextProviderProps) => {
         else if (action === 'plus') newQty++;
         if (user) {
             try {
-                const token = await getIdToken(user);
-                const response = await axios.put(url + id + '/update', { newQty }, {
+                const response = await axios.put(`cart/${id}/update`, { newQty }, {
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
                     },
-                    withCredentials: true
                 });
                 if (response.status === 200) router.reload();
             } catch (error) {

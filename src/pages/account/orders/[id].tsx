@@ -1,6 +1,5 @@
-import axios from 'axios';
+import axios from '../../../utilities/axiosConfig';
 import Link from 'next/link';
-import { getIdToken } from 'firebase/auth';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/app/firebase/AuthContext';
@@ -19,20 +18,12 @@ export default function OrderDetail () {
     const [ address, setAddress ] = useState <AddressType | null> (null);
     const [ items, setItems ] = useState <ShoppingCart | null > (null);
 
-    const url = `http://127.0.0.1:5000/api/order/${id}`;
-
 
     useEffect(() => {
         const fetchOrder = async () => {
             if (user) {
                 try {
-                    const token = await getIdToken(user);
-                    const response = await axios.get(url, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                        withCredentials: true,
-                    });
+                    const response = await axios.get(`order/${id}`);
                     if (response.status === 200) {
                         const { id, date, paymentStatus, shippingMethod, status, totalPrice } = response.data.order;
                         setOrder({

@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { getIdToken } from 'firebase/auth';
+import axios from '../../utilities/axiosConfig';
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/app/firebase/AuthContext';
@@ -19,12 +18,11 @@ export default function ProductShow () {
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
 
     const { id } = router.query;
-    const url = 'http://127.0.0.1:5000/api/';
     
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await axios.get(url + `product/${id}`);
+                const response = await axios.get(`product/${id}`);
                 if (response.status === 200) setProduct(response.data.product);
             } catch (error) {
                 console.error('Error fetching product: ', error);
@@ -51,13 +49,10 @@ export default function ProductShow () {
         if (user) {
             // if user, make req to /cart/create to create cart item for user
             try {
-                const token = await getIdToken(user);
-                const response = await axios.post(url + 'cart/add', data, {
+                const response = await axios.post('cart/add', data, {
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
                     },
-                    withCredentials: true,
                 });
                 if (response.status === 201) {
                     console.log('success');

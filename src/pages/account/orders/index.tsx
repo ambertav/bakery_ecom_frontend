@@ -1,6 +1,5 @@
-import axios from 'axios';
+import axios from '../../../utilities/axiosConfig';
 import Link from 'next/link';
-import { getIdToken, User } from 'firebase/auth';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/firebase/AuthContext';
 
@@ -14,20 +13,11 @@ export default function OrderHistory () {
     const [ isLoading, setIsLoading ] = useState <boolean> (true);
     const [ orders, setOrders ] = useState <OrderType[] | null> (null);
 
-    const url = 'http://127.0.0.1:5000/api/order/';
-
-
     useEffect(() => {
         const fetchOrders = async () => {
             if (user) {
                 try {
-                    const token = await getIdToken(user);
-                    const response = await axios.get(url, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                        withCredentials: true,
-                    });
+                    const response = await axios.get('order/');
                     if (response.status === 200) setOrders(response.data.orders);
                 } catch (error) {
                     console.error('Error fetching order history: ', error);

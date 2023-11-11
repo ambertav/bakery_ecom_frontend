@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { getIdToken } from 'firebase/auth';
+import axios from '../../../utilities/axiosConfig';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/firebase/AuthContext';
@@ -15,19 +14,11 @@ export default function ManageAddress () {
     const [ isLoading, setIsLoading ] = useState <boolean> (true);
     const [ addresses, setAddresses ] = useState <AddressType[] | null> (null);
 
-    const url = 'http://127.0.0.1:5000/api/address/';
-
     useEffect(() => {
         const fetchAddresses = async () => {
             if (user) {
                 try {
-                    const token = await getIdToken(user)
-                    const response = await axios.get(url, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                        withCredentials: true,
-                    });
+                    const response = await axios.get('address/');
                     if (response.status === 200) setAddresses(response.data.addresses);
                 } catch (error) {
                     console.error('Error fetching billing addresses:', error);
@@ -43,13 +34,7 @@ export default function ManageAddress () {
 
     async function handleDefault (id : number) {
         try {
-            const token = await getIdToken(user)
-            const response = await axios.put(url + `default/${id}`, null, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true,
-            });
+            const response = await axios.put(`address/default/${id}`, null);
             if (response.status === 200) router.reload();
         } catch (error) {
             console.error('Error updating addresses:', error);
@@ -58,13 +43,7 @@ export default function ManageAddress () {
 
     async function handleDelete (id : number) {
         try {
-            const token = await getIdToken(user)
-            const response = await axios.delete(url + `${id}/delete`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true,
-            });
+            const response = await axios.delete(`address/${id}/delete`);
             if (response.status === 200) router.reload();
         } catch (error) {
             console.error('Error deleting address:', error);

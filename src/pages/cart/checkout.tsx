@@ -1,7 +1,6 @@
-import axios from 'axios';
+import axios from '../../utilities/axiosConfig';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { getIdToken } from 'firebase/auth';
 
 import { useCartContext } from '../../components/CartContext';
 import  AddressForm  from '../../components/AddressForm';
@@ -35,9 +34,6 @@ export default function Checkout () {
     const [ isNewBilling, setIsNewBilling ] = useState <boolean> (false);
     const [ showAddressOptions, setShowAddressOptions ] = useState <boolean> (false);
 
-    // url endpoint for stripe checkout page creation
-    const url = 'http://127.0.0.1:5000/api/';
-
     // retrieves user's saved addresses
     useEffect(() => {
         const fetchAddresses = async () => {
@@ -45,13 +41,7 @@ export default function Checkout () {
                 const { user } = cartContext;
                 if (user) {
                     try {
-                        const token = await getIdToken(user)
-                        const response = await axios.get(url + 'address/', {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                            withCredentials: true,
-                        });
+                        const response = await axios.get('address/');
     
                         if (response.status === 200) {
                             setExistingAddresses(response.data.addresses);
@@ -117,13 +107,11 @@ export default function Checkout () {
             const { cart, user } = cartContext;
             // request to server to return stripe checkout session url + create user's order instance
             try {
-                const token = await getIdToken(user);
                 // pass in cart info and form submission to server request
-                const response = await axios.post(url + 'order/create-checkout-session', { cart, billing, shipping, method }, {
+                const response = await axios.post('order/create-checkout-session', { cart, billing, shipping, method }, {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
                     },
-                    withCredentials: true,
                 });
                 window.location = response.data.checkout_url;
             } catch (error) {
