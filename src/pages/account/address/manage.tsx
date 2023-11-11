@@ -13,6 +13,7 @@ export default function ManageAddress () {
 
     const [ isLoading, setIsLoading ] = useState <boolean> (true);
     const [ addresses, setAddresses ] = useState <AddressType[] | null> (null);
+    const [ errorMessage, setErrorMessage ] = useState <string> ('');
 
     useEffect(() => {
         const fetchAddresses = async () => {
@@ -21,7 +22,7 @@ export default function ManageAddress () {
                     const response = await axios.get('address/');
                     if (response.status === 200) setAddresses(response.data.addresses);
                 } catch (error) {
-                    console.error('Error fetching billing addresses:', error);
+                    console.error('Error fetching addresses:', error);
                 }
             }
         }
@@ -45,16 +46,21 @@ export default function ManageAddress () {
         try {
             const response = await axios.delete(`address/${id}/delete`);
             if (response.status === 200) router.reload();
-        } catch (error) {
+        } catch (error : any) {
+            if (error.response.status === 400 && error.response.data.error === 'Violates not null constraint') {
+                setErrorMessage('This address is associated with an order and cannot be deleted');
+            }
             console.error('Error deleting address:', error);
         }
     }
+
 
     function loaded () {
         return (
             <main>
                 <h1>Manage Addresses</h1>
                 <div>
+                    {errorMessage ? errorMessage : ''}
                     {addresses ? (
                         <ul>
                         {addresses!.map((a, index) => (
