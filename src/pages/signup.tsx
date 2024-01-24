@@ -10,9 +10,8 @@ export default function Signup () {
             const userCredential : UserCredential = await createUserWithEmailAndPassword(auth, email, password);
             const newUser : User | null = userCredential.user;
             return newUser;
-        } catch (error) {
-            console.error('Error signing up: ', error);
-            return null;
+        } catch (error : any) {
+            throw error;
         }
     }
       

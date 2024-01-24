@@ -13,8 +13,7 @@ export default function Login () {
             const currentUser : User | null = userCredential.user;
             return currentUser;
         } catch (error) {
-            console.error('Error logging in: ', error);
-            return null;
+            throw error;
         }
     }    
 

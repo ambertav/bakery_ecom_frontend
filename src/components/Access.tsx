@@ -1,5 +1,5 @@
 import axios from '../utilities/axiosConfig';
-import { FormData, ErrorResponse } from "../../types/types";
+import { FormData } from "../../types/types";
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { User } from '@firebase/auth';
@@ -8,10 +8,6 @@ import { User } from '@firebase/auth';
 interface AccessProps {
     method: (email: string, password: string) => Promise<User | null>;
   }
-
-function isAxiosError(error: any) : error is import('axios').AxiosError {
-    return error.response !== undefined;
-}
 
 export default function Access (props : AccessProps) {
     const router = useRouter();
@@ -23,10 +19,9 @@ export default function Access (props : AccessProps) {
     });
     const [ errorMessage, setErrorMessage ] = useState<string>('');
 
-    function formVerification(password: string, confirm: string): string | undefined {
-        if (password !== confirm) {
-          return 'Passwords do not match';
-        }
+    function passwordVerification (password: string, confirm: string): string | undefined {
+        if (password !== confirm) return 'Passwords do not match';
+
         // Return undefined when passwords match
         return undefined;
       }
@@ -41,9 +36,10 @@ export default function Access (props : AccessProps) {
 
     const handleSubmit = async (evt: FormEvent) => {
         evt.preventDefault();
+        setErrorMessage('');
         // password match for signup
-        if (router.pathname === 'signup') {
-            const message = formVerification(formInput.password, formInput.confirm_password);
+        if (router.pathname === '/signup') {
+            const message = passwordVerification(formInput.password, formInput.confirm_password);
             if (message) return setErrorMessage(message);
         }
         
@@ -52,10 +48,7 @@ export default function Access (props : AccessProps) {
         const localStorageCart = JSON.parse(localStorage.getItem('cart') || '[]');
 
         // passing in localStorageCart for cart item creation and association with user upon signup or login
-        const submitBody = {
-            name,
-            localStorageCart,
-        };
+        const submitBody = { name, localStorageCart }
 
         try {
             // signup or login user with firebase
@@ -73,19 +66,13 @@ export default function Access (props : AccessProps) {
                         router.push('/');
                     }
                 }
-            } catch (error) {
-                if (isAxiosError(error) && error.response) {
-                    if (error.code === 'auth/email-already-in-use') setErrorMessage('Email already in use');
-                    else console.error(error);
-                }   
+            } catch (error : any) {
+                console.error(error);
             }
-        } catch (error) {
-            if (isAxiosError(error) && error.response) {
-                const errorResponse = error.response.data as ErrorResponse;
-                setErrorMessage(errorResponse.message || 'An error occurred.');
-            } else {
-                console.error('Error submitting the form:', error);
-            }
+        } catch (error : any) {
+            if (error.code === 'auth/email-already-in-use') setErrorMessage('Email already in use');
+            else if (error.code === 'auth/weak-password') setErrorMessage('Password should be at least 6 characters');
+            else if (error.code === 'auth/invalid-login-credentials') setErrorMessage('Invalid credentials, please try again');
         }
     }
 
@@ -100,6 +87,7 @@ export default function Access (props : AccessProps) {
                 name={name}
                 value={formInput[name]}
                 onChange={handleChange}
+                required={true}
               />
             </div>
           );
@@ -108,7 +96,7 @@ export default function Access (props : AccessProps) {
     return (
         <main>
             <h1>{router.pathname === '/signup' ? 'Signup' : 'Login'}</h1>
-            <span>{errorMessage}</span>
+            <span>{errorMessage && errorMessage}</span>
             <form onSubmit={handleSubmit}>
                 {router.pathname === '/signup' ? (
                     <>
@@ -124,7 +112,7 @@ export default function Access (props : AccessProps) {
                     </>
                 )
                 }
-                <input type="submit" className="submit" />
+                <input type="submit" className="submit" value='Submit' />
             </form>
         </main>
     );
