@@ -1,17 +1,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { auth } from '../app/firebase/firebaseConfig';
-
-async function logout() {
-    try {
-        await auth.signOut();
-    } catch (error) {
-        console.error('Logout error:', error);
-    }
-}
+import { useAuth } from '../app/firebase/AuthContext';
 
 export default function Logout() {
-  const router = useRouter();
+    const router = useRouter();
+    const { logout } = useAuth();
+
     useEffect(() => {
         const handleLogout = async () => {
             await logout();
@@ -20,5 +14,6 @@ export default function Logout() {
 
         handleLogout();
     }, []);
+
     return null;
 }
