@@ -3,6 +3,7 @@ import { FormData } from "../../types/types";
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { User } from '@firebase/auth';
+import { renderInput } from '@/utilities/formUtilities';
 
 // type for signup and login props
 interface AccessProps {
@@ -19,7 +20,7 @@ export default function Access (props : AccessProps) {
     });
     const [ errorMessage, setErrorMessage ] = useState<string>('');
 
-    function passwordVerification (password: string, confirm: string): string | undefined {
+    function passwordVerification (password : string, confirm: string): string | undefined {
         if (password !== confirm) return 'Passwords do not match';
 
         // Return undefined when passwords match
@@ -39,7 +40,7 @@ export default function Access (props : AccessProps) {
         setErrorMessage('');
         // password match for signup
         if (router.pathname === '/signup') {
-            const message = passwordVerification(formInput.password, formInput.confirm_password);
+            const message = passwordVerification(formInput.password as string, formInput.confirm_password as string);
             if (message) return setErrorMessage(message);
         }
         
@@ -52,7 +53,7 @@ export default function Access (props : AccessProps) {
 
         try {
             // signup or login user with firebase
-            const user = await props.method(formInput.email, formInput.password);
+            const user = await props.method(formInput.email as string, formInput.password as string);
             try {
                 if (user) {
                     const response = await axios.post('user' + router.pathname, submitBody, { 
@@ -76,23 +77,6 @@ export default function Access (props : AccessProps) {
         }
     }
 
-    // conditionally render form inputs to resuse for signup and login pages
-    function renderInput(name : string, label : string, type : string = 'text') {
-        return (
-            <div key={name}>
-              <label htmlFor={name}>{label}</label>
-              <input
-                type={type}
-                id={name}
-                name={name}
-                value={formInput[name]}
-                onChange={handleChange}
-                required={true}
-              />
-            </div>
-          );
-    }
-
     return (
         <main>
             <h1>{router.pathname === '/signup' ? 'Signup' : 'Login'}</h1>
@@ -100,15 +84,15 @@ export default function Access (props : AccessProps) {
             <form onSubmit={handleSubmit}>
                 {router.pathname === '/signup' ? (
                     <>
-                        {renderInput('name', 'Name')}
-                        {renderInput('email', 'Email', 'email')}
-                        {renderInput('password', 'Password', 'password')}
-                        {renderInput('confirm_password', 'Confirm Password', 'password')}
+                        {renderInput('name', 'Name', 'text', formInput, handleChange)}
+                        {renderInput('email', 'Email', 'email', formInput, handleChange)}
+                        {renderInput('password', 'Password', 'password', formInput, handleChange)}
+                        {renderInput('confirm_password', 'Confirm Password', 'password', formInput, handleChange)}
                     </>
                 ) : (
                     <>
-                        {renderInput('email', 'Email', 'email')}
-                        {renderInput('password', 'Password', 'password')}
+                        {renderInput('email', 'Email', 'email', formInput, handleChange)}
+                        {renderInput('password', 'Password', 'password', formInput, handleChange)}
                     </>
                 )
                 }

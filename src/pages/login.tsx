@@ -7,7 +7,7 @@ import Access from '@/components/Access';
 
 export default function Login () {
 
-    async function login (email : string, password : string) {
+    async function login (email : string, password : string) : Promise< User | null> {
         try {
             const userCredential : UserCredential = await signInWithEmailAndPassword(auth, email, password);
             const currentUser : User | null = userCredential.user;
