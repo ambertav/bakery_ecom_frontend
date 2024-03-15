@@ -1,20 +1,21 @@
 import { useState } from 'react';
-import { FormData } from '../../../types/types';
+import { FormInput } from '../../../types/types';
 import ProductForm from '@/components/ProductForm';
 
 export default function ProductCreate() {
-    const [ formInput, setFormInput ] = useState<FormData>({
+    const [ formInput, setFormInput ] = useState<FormInput>({
         name: '',
         description: '',
         category: '',
-        image: '',
         price: 1,
         stock: 1,
     });
+
+    const [displayFile, setDisplayFile] = useState<string>('');
     
     return (
         <>
-            <ProductForm formInput={formInput} setFormInput={setFormInput} id={''} isLoading={false} setIsLoading={null}/>
+            <ProductForm formInput={formInput} setFormInput={setFormInput} id={''} isLoading={false} setIsLoading={null} displayFile={displayFile} setDisplayFile={setDisplayFile} />
         </>
     );
 }

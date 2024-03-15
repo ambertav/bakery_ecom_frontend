@@ -1,15 +1,16 @@
 import axios from '../../../utilities/axiosConfig';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { FormData } from '../../../../types/types';
+import { FormInput } from '../../../../types/types';
 import ProductForm from '@/components/ProductForm';
 
 export default function ProductEdit() {
   const router = useRouter();
   
-  const [formInput, setFormInput] = useState<FormData>({});
+  const [formInput, setFormInput] = useState<FormInput>({});
   const [productId, setProductId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [displayFile, setDisplayFile] = useState<string>('');
 
   const { id } = router.query;
 
@@ -21,10 +22,11 @@ export default function ProductEdit() {
         const response = await axios.get(`product/${id}`);
         if (response.status === 200) {
           // destructuring to get product details without id as in formData type
-          const { id, ...productData } = response.data.product;
+          const { id, image, ...productData } = response.data.product;
 
           // storing id for use in edit page's axios request
           setProductId(id as string);
+          setDisplayFile(image)
 
           // setting form state to product details, to render values in edit form
           setFormInput({
@@ -55,6 +57,8 @@ export default function ProductEdit() {
         id={productId}
         isLoading={isLoading}
         setIsLoading={setIsLoading}
+        displayFile={displayFile}
+        setDisplayFile={setDisplayFile}
       />
     </>
   );
