@@ -1,5 +1,5 @@
 export interface FormData {
-    [fieldName: string]: string;
+    [fieldName: string]: string | number;
 }
 
 export interface ErrorResponse {
@@ -10,6 +10,7 @@ export interface ProductType {
     id: number;
     name: string;
     description: string;
+    category: string;
     image: string;
     price: number;
     stock: number;
@@ -32,12 +33,14 @@ export interface CartItem {
 export interface ShoppingCart extends Array<CartItem> {}
 
 export interface AddressType {
+    id: number;
     firstName: string;
     lastName: string;
     street: string;
     city: string;
     state: string;
     zip: string;
+    default: boolean;
 }
 
 export interface OrderType {
