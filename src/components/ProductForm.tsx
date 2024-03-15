@@ -9,18 +9,24 @@ import {
 } from 'react';
 import { useRouter } from 'next/router';
 import { renderInput } from '@/utilities/formUtilities';
-import { FormData } from '../../types/types';
+import { FormInput } from '../../types/types';
 
 import LoadingSpinner from './LoadingSpinner';
 
 interface ProductFormProps {
-  formInput: FormData;
-  setFormInput: Dispatch<SetStateAction<FormData>>;
+  formInput: FormInput;
+  setFormInput: Dispatch<SetStateAction<FormInput>>;
   id: string; // product id for edit url
 
   // to display loading spinner for edit page
   isLoading: boolean;
   setIsLoading: Dispatch<SetStateAction<boolean>> | null;
+
+  // to display image
+  // passed in as empty string for create page
+  // passed in as product's current image string for edit page
+  displayFile: string;
+  setDisplayFile: Dispatch<SetStateAction<string>>;
 }
 
 export default function ProductForm({
@@ -29,8 +35,12 @@ export default function ProductForm({
   id,
   isLoading,
   setIsLoading,
+  displayFile,
+  setDisplayFile,
 }: ProductFormProps) {
   const router = useRouter();
+
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const isCreate = router.pathname === '/products/create';
 
@@ -46,6 +56,15 @@ export default function ProductForm({
 
     return () => clearTimeout(timeout);
   }, [isLoading]);
+
+  const handleFileChange = (evt: ChangeEvent<HTMLInputElement>) => {
+    // extracts file
+    const file = evt.target.files![0];
+
+    // set display and upload file state
+    setDisplayFile(URL.createObjectURL(file));
+    setUploadedFile(file);
+  };
 
   const handleChange = async (
     evt:
@@ -89,9 +108,32 @@ export default function ProductForm({
         headers: { 'Content-Type': 'application/json' },
       });
 
-      // direct to product show
-      if (response.status === (isCreate ? 201 : 200))
+      if (response.status === (isCreate ? 201 : 200)) {
+
+        // only makes request if :
+            // product was successfully created / updated as to use id in req
+            // and if uploaded file is included (skips req for edit page where new image is not uploaded)
+        if (uploadedFile) {
+          try {
+            const formData = new FormData();
+            formData.append('image', uploadedFile);
+
+            const photoResponse = await axios.post(
+              `product/${response.data.product.id}/upload_photo`,
+              formData,
+              {
+                headers: { 'Content-Type': 'multipart/form-data' },
+              }
+            );
+
+          } catch (error) {
+            console.error('Error uploading photo: ', error);
+          }
+        }
+
+        // directs to product show page after submissions
         router.push(`/products/${response.data.product.id}`);
+      }
     } catch (error) {
       console.error(
         `Error ${isCreate ? 'creating' : 'updating'} product: `,
@@ -103,7 +145,17 @@ export default function ProductForm({
   function loaded() {
     return (
       <>
-        <form onSubmit={handleSubmit}>
+        <form encType="multipart/form-data" onSubmit={handleSubmit}>
+          {displayFile && (
+            <img src={displayFile} alt="Uploaded" width={250} height={250} />
+          )}
+          <input
+            type="file"
+            name="image"
+            id="image"
+            onChange={handleFileChange}
+            accept=".jpg,.png,.jpeg,.gif"
+          />
           {renderInput('name', 'Name', 'text', formInput, handleChange)}
           <div key={'description'}>
             <label htmlFor={'description'}>Description</label>
@@ -134,7 +186,6 @@ export default function ProductForm({
               <option value="PASTRY">Pastry</option>
             </select>
           </div>
-          {renderInput('image', 'Image', 'url', formInput, handleChange)}
           {renderInput('price', 'Price', 'number', formInput, handleChange)}
           {renderInput('stock', 'Stock', 'number', formInput, handleChange)}
           <input type="submit" />
