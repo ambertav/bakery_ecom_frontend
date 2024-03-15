@@ -1,5 +1,5 @@
 import axios from '../utilities/axiosConfig';
-import { FormData } from "../../types/types";
+import { FormInput } from "../../types/types";
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { User } from '@firebase/auth';
@@ -12,7 +12,7 @@ interface AccessProps {
 
 export default function Access (props : AccessProps) {
     const router = useRouter();
-    const [ formInput, setFormInput ] = useState<FormData>({
+    const [ formInput, setFormInput ] = useState<FormInput>({
         name: '',
         email: '',
         password: '',

@@ -1,4 +1,4 @@
-export interface FormData {
+export interface FormInput {
     [fieldName: string]: string | number;
 }
 
