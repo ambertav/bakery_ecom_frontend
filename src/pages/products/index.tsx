@@ -18,6 +18,7 @@ export default function ProductIndex() {
     Number(router.query.page) || 1
   );
   const [category, setCategory] = useState<string>('');
+  const [sort, setSort] = useState<string>('recommended');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -26,11 +27,14 @@ export default function ProductIndex() {
     const fetchProducts = async () => {
       if (router.isReady) {
         const categoryParam = category ? `category=${category}` : '';
-        const pageParam = `page=${router.query.page}`;
+        const pageParam = `page=${currentPage}`;
+        const sortParam = sort ? `sort=${sort}` : '';
 
         // combining paramaters
-        const queryParams = [categoryParam, pageParam].filter(param => param).join('&');
-    
+        const queryParams = [categoryParam, sortParam, pageParam]
+          .filter((param) => param)
+          .join('&');
+
         // urlPath with query params
         const urlPath = `product/?${queryParams}`;
 
@@ -54,7 +58,7 @@ export default function ProductIndex() {
     fetchProducts();
 
     return () => clearTimeout(timeout);
-  }, [router.isReady, currentPage, router.query]);
+  }, [router.isReady, router.query, currentPage, category]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -65,21 +69,39 @@ export default function ProductIndex() {
     });
   };
 
-  const handleCategoryChange = (evt : ChangeEvent<HTMLSelectElement>) => {
+  const handleCategoryChange = (evt: ChangeEvent<HTMLSelectElement>) => {
     setCategory(evt.target.value);
+
+    // reset page and sort when category is changed
+    setSort('recommended');
+    setCurrentPage(1);
+
     setIsLoading(true);
     router.push({
-      pathname: router.pathname,
-      query: { ...router.query, category: evt.target.value },
-    });
-  }
+        pathname: router.pathname,
+        query: { category: evt.target.value },
+      });
+  };
+
+  const handleSortChange = (evt: ChangeEvent<HTMLInputElement>) => {
+    setSort(evt.target.value);
+
+    // reset page when sort is changed
+    setCurrentPage(1);
+
+    setIsLoading(true);
+    router.push({
+        pathname: router.pathname,
+        query: { ...router.query, sort: evt.target.value, page: 1 },
+    })
+  };
 
   function loaded() {
     return (
       <main>
         <h1>All Products</h1>
         <div>
-        <div key={'category'}>
+          <div key={'category'}>
             <label htmlFor={'category'}>Filter by Category</label>
             <select
               id="category"
@@ -98,7 +120,54 @@ export default function ProductIndex() {
           </div>
         </div>
         <div>
-        sort by price asecending sort by price descending
+          <div>
+            <h3>Sort by</h3>
+            <input
+              type="radio"
+              name="sort"
+              id="recommended"
+              value="recommended"
+              checked={sort === 'recommended'}
+              onChange={handleSortChange}
+            />
+            <label htmlFor="recommended">Recommended</label>
+            <input
+              type="radio"
+              name="sort"
+              id="priceAscending"
+              value="priceAsc"
+              checked={sort === 'priceAsc'}
+              onChange={handleSortChange}
+            />
+            <label htmlFor="priceAscending">Price: low to high</label>
+            <input
+              type="radio"
+              name="sort"
+              id="priceDescending"
+              value="priceDesc"
+              checked={sort === 'priceDesc'}
+              onChange={handleSortChange}
+            />
+            <label htmlFor="priceDescending">Price: high to low</label>
+            <input
+              type="radio"
+              name="sort"
+              id="nameAscending"
+              value="nameAsc"
+              checked={sort === 'nameAsc'}
+              onChange={handleSortChange}
+            />
+            <label htmlFor="descending">Name: A to Z</label>
+            <input
+              type="radio"
+              name="sort"
+              id="nameDescending"
+              value="nameDesc"
+              checked={sort === 'nameDesc'}
+              onChange={handleSortChange}
+            />
+            <label htmlFor="descending">Name: Z to A</label>
+          </div>
         </div>
         <div>search</div>
         <div>
@@ -106,7 +175,7 @@ export default function ProductIndex() {
             {products !== null ? (
               products.map((p, key) => (
                 <div key={key}>
-                    <Product product={p} page="index" />
+                  <Product product={p} page="index" />
                 </div>
               ))
             ) : (
