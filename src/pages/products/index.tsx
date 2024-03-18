@@ -5,6 +5,7 @@ import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { ProductType } from '../../../types/types';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
+import Filter from '@/components/Filter';
 import Pagination from '@/components/Pagination';
 import Product from '@/components/Product';
 
@@ -27,8 +28,9 @@ export default function ProductIndex() {
 
     const fetchProducts = async () => {
       if (router.isReady) {
+        // defining parameters for axios call
         const categoryParam = category ? `category=${category}` : '';
-        const pageParam = `page=${currentPage}`;
+        const pageParam = `page=${router.query.page}`;
         const sortParam = sort ? `sort=${sort}` : '';
         const searchParam = search ? `search=${search}` : '';
 
@@ -71,130 +73,90 @@ export default function ProductIndex() {
     });
   };
 
-  const handleCategoryChange = (evt: ChangeEvent<HTMLSelectElement>) => {
-    setCategory(evt.target.value);
+  const handleFilterChange = (
+    selectedCategory: string | null,
+    selectedSort: string | null
+  ) => {
+    const newQuery: any = {};
 
-    // reset page and sort when category is changed
-    setSort('recommended');
+    if (selectedCategory !== null) {
+      // set category and add to query
+      setCategory(selectedCategory);
+
+      // reset sort and search parameters, only add category to query
+      setSort('recommended');
+      setSearch('');
+      selectedCategory ? (newQuery['category'] = selectedCategory) : '';
+    }
+
+    if (selectedSort !== null) {
+      // set sort and add to query
+      setSort(selectedSort);
+      newQuery['sort'] = selectedSort;
+
+      // add category and search to query to maintain those parameters
+      category ? (newQuery['category'] = category) : '';
+      search ? (newQuery['search'] = search) : '';
+    }
+
+    // defaulting to page one on any change
     setCurrentPage(1);
-    setSearch('');
-
     setIsLoading(true);
+
     router.push({
-        pathname: router.pathname,
-        query: { category: evt.target.value },
-      });
-  };
-
-  const handleSortChange = (evt: ChangeEvent<HTMLInputElement>) => {
-    setSort(evt.target.value);
-
-    // reset page when sort is changed
-    setCurrentPage(1);
-
-    setIsLoading(true);
-    router.push({
-        pathname: router.pathname,
-        query: { ...router.query, sort: evt.target.value, page: 1 },
-    })
+      pathname: router.pathname,
+      query: { ...newQuery },
+    });
   };
 
   const handleSearchChange = (evt: ChangeEvent<HTMLInputElement>) => {
     setSearch(evt.target.value);
-  }
+  };
 
   const handleSearchSubmit = (evt: FormEvent) => {
     setCurrentPage(1);
+    setSort('recommended');
     setIsLoading(true);
-    
+
     let categoryParam = category ? { category } : {};
 
     router.push({
-        pathname: router.pathname,
-        query: { ...categoryParam, search: search },
+      pathname: router.pathname,
+      query: { ...categoryParam, search: search },
     });
-    
-  }
+  };
 
   function loaded() {
     return (
       <main>
         <h1>All Products</h1>
         <div>
-          <div key={'category'}>
-            <label htmlFor={'category'}>Filter by Category</label>
-            <select
-              id="category"
-              name="category"
-              value={category}
-              onChange={handleCategoryChange}
-            >
-              <option value="">Select a category</option>
-              <option value="cake">Cake</option>
-              <option value="cupcake">Cupcake</option>
-              <option value="pie">Pie</option>
-              <option value="cookie">Cookie</option>
-              <option value="donut">Donut</option>
-              <option value="pastry">Pastry</option>
-            </select>
-          </div>
+          <Filter
+            categories={['cake', 'cupcake', 'pie', 'cookie', 'donut', 'pastry']}
+            sortOptions={[
+              'recommended',
+              'priceAsc',
+              'priceDesc',
+              'nameAsc',
+              'nameDesc',
+            ]}
+            category={category}
+            sort={sort}
+            onFilterChange={handleFilterChange}
+          />
         </div>
         <div>
-          <div>
-            <h3>Sort by</h3>
+          <form onSubmit={handleSearchSubmit}>
+            <label htmlFor="search">Search</label>
             <input
-              type="radio"
-              name="sort"
-              id="recommended"
-              value="recommended"
-              checked={sort === 'recommended'}
-              onChange={handleSortChange}
+              type="text"
+              name="search"
+              id="search"
+              placeholder="search products"
+              onChange={handleSearchChange}
             />
-            <label htmlFor="recommended">Recommended</label>
-            <input
-              type="radio"
-              name="sort"
-              id="priceAscending"
-              value="priceAsc"
-              checked={sort === 'priceAsc'}
-              onChange={handleSortChange}
-            />
-            <label htmlFor="priceAscending">Price: low to high</label>
-            <input
-              type="radio"
-              name="sort"
-              id="priceDescending"
-              value="priceDesc"
-              checked={sort === 'priceDesc'}
-              onChange={handleSortChange}
-            />
-            <label htmlFor="priceDescending">Price: high to low</label>
-            <input
-              type="radio"
-              name="sort"
-              id="nameAscending"
-              value="nameAsc"
-              checked={sort === 'nameAsc'}
-              onChange={handleSortChange}
-            />
-            <label htmlFor="descending">Name: A to Z</label>
-            <input
-              type="radio"
-              name="sort"
-              id="nameDescending"
-              value="nameDesc"
-              checked={sort === 'nameDesc'}
-              onChange={handleSortChange}
-            />
-            <label htmlFor="descending">Name: Z to A</label>
-          </div>
-        </div>
-        <div>
-            <form onSubmit={handleSearchSubmit}>
-                <label htmlFor="search">Search</label>
-                <input type="text" name="search" id="search" placeholder="search products" onChange={handleSearchChange} />
-                <input type="submit" value="Search" />
-            </form>
+            <input type="submit" value="Search" />
+          </form>
         </div>
         <div>
           <ul>
