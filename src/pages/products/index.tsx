@@ -1,7 +1,7 @@
 import axios from '../../utilities/axiosConfig';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../app/firebase/AuthContext';
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { ProductType } from '../../../types/types';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -19,6 +19,7 @@ export default function ProductIndex() {
   );
   const [category, setCategory] = useState<string>('');
   const [sort, setSort] = useState<string>('recommended');
+  const [search, setSearch] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -29,9 +30,10 @@ export default function ProductIndex() {
         const categoryParam = category ? `category=${category}` : '';
         const pageParam = `page=${currentPage}`;
         const sortParam = sort ? `sort=${sort}` : '';
+        const searchParam = search ? `search=${search}` : '';
 
         // combining paramaters
-        const queryParams = [categoryParam, sortParam, pageParam]
+        const queryParams = [categoryParam, searchParam, sortParam, pageParam]
           .filter((param) => param)
           .join('&');
 
@@ -75,6 +77,7 @@ export default function ProductIndex() {
     // reset page and sort when category is changed
     setSort('recommended');
     setCurrentPage(1);
+    setSearch('');
 
     setIsLoading(true);
     router.push({
@@ -95,6 +98,23 @@ export default function ProductIndex() {
         query: { ...router.query, sort: evt.target.value, page: 1 },
     })
   };
+
+  const handleSearchChange = (evt: ChangeEvent<HTMLInputElement>) => {
+    setSearch(evt.target.value);
+  }
+
+  const handleSearchSubmit = (evt: FormEvent) => {
+    setCurrentPage(1);
+    setIsLoading(true);
+    
+    let categoryParam = category ? { category } : {};
+
+    router.push({
+        pathname: router.pathname,
+        query: { ...categoryParam, search: search },
+    });
+    
+  }
 
   function loaded() {
     return (
@@ -169,7 +189,13 @@ export default function ProductIndex() {
             <label htmlFor="descending">Name: Z to A</label>
           </div>
         </div>
-        <div>search</div>
+        <div>
+            <form onSubmit={handleSearchSubmit}>
+                <label htmlFor="search">Search</label>
+                <input type="text" name="search" id="search" placeholder="search products" onChange={handleSearchChange} />
+                <input type="submit" value="Search" />
+            </form>
+        </div>
         <div>
           <ul>
             {products !== null ? (
