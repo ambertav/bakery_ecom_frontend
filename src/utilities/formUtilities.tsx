@@ -1,11 +1,11 @@
 import { ChangeEvent, Dispatch } from 'react';
-import { FormData } from '../../types/types';
+import { FormInput } from '../../types/types';
 
 export const renderInput = (
   name: string,
   label: string,
   type: string = 'text',
-  formInput: FormData,
+  formInput: FormInput,
   handleChange:
     | Dispatch<
         | ChangeEvent<HTMLInputElement>
@@ -23,10 +23,9 @@ export const renderInput = (
   } = {};
 
   // number type attributes, for create product form
-  if (type === 'number') {
-    additionalAttributes.min = '1';
 
     if (name === 'stock') {
+        additionalAttributes.min = '0';
       // prevents user from typing in a decimal point
       additionalAttributes.onKeyPress = (
         evt: React.KeyboardEvent<HTMLInputElement>
@@ -34,9 +33,11 @@ export const renderInput = (
         if (evt.key === '.') evt.preventDefault();
       };
     }
-  }
 
-  if (name === 'price') additionalAttributes.step = '0.01';
+  if (name === 'price') {
+    additionalAttributes.step = '0.01';
+    additionalAttributes.min = '1';
+  }
 
   return (
     <div key={name}>

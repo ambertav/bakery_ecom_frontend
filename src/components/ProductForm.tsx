@@ -75,7 +75,7 @@ export default function ProductForm({
     let { name, value, type } = evt.target;
 
     // prevents user from inputting 0 for number inputs
-    if (type === 'number' && value === '0') value = '1';
+    if (name === 'price' && value === '0') value = '1';
 
     // NOTE: restriction for stock as integer added as onKeyPress in formUtilities renderInput function
 
