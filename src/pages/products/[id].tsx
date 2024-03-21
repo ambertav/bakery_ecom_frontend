@@ -1,5 +1,6 @@
 import axios from '../../utilities/axiosConfig';
-import { useState, useEffect, FormEvent } from 'react';
+import Link from 'next/link';
+import { useState, useEffect, FormEvent, MouseEvent } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/app/firebase/AuthContext';
 import { ProductType, CartItem, ShoppingCart } from '../../../types/types';
@@ -8,9 +9,8 @@ import Product from '@/components/Product';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function ProductShow () {
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
     const router = useRouter();
-
     const [ product, setProduct ] = useState<ProductType | null>(null);
     const [ formState, setFormState ] = useState({
         qty: 1
@@ -104,6 +104,7 @@ export default function ProductShow () {
                                 }}/>
                                 <input type="submit" value="Add to Cart" />
                             </form>
+                            {isAdmin && (<Link href={`/products/${product.id}/edit`}>Edit Product</Link>)}
                         </>
                     ) : (
                         <div>No product</div>
