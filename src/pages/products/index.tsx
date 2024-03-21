@@ -19,7 +19,9 @@ export default function ProductIndex() {
   const [currentPage, setCurrentPage] = useState<number>(
     Number(router.query.page) || 1
   );
-  const [category, setCategory] = useState<string>('');
+  const [category, setCategory] = useState<string>(
+    (router.query.category as string) || ''
+  );
   const [sort, setSort] = useState<string>('recommended');
   const [search, setSearch] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -65,6 +67,22 @@ export default function ProductIndex() {
 
     return () => clearTimeout(timeout);
   }, [router.isReady, router.query, currentPage, category]);
+
+  // useEffect to update category from navigation links
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    setIsLoading(true);
+
+    if (router.query.category) setCategory(router.query.category as string);
+    else setCategory('');
+
+    timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [router.isReady, router.query.category]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -134,19 +152,22 @@ export default function ProductIndex() {
     if (Object.keys(updatedProducts).length === 0) return;
 
     try {
-        const response = await axios.put('/product/inventory/update', updatedProducts, {
-            headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (response.status === 200) {
-            setIsLoading(true);
-            router.push('/products');
+      const response = await axios.put(
+        '/product/inventory/update',
+        updatedProducts,
+        {
+          headers: { 'Content-Type': 'application/json' },
         }
+      );
 
+      if (response.status === 200) {
+        setIsLoading(true);
+        router.push('/products');
+      }
     } catch (error) {
-        console.error('Error updating inventory: ', error);
+      console.error('Error updating inventory: ', error);
     }
-  }
+  };
 
   function loaded() {
     return (
@@ -177,7 +198,11 @@ export default function ProductIndex() {
               placeholder="search products"
               onChange={handleSearchChange}
             />
-            <input type="submit" value="Search" disabled={search === '' ? true : false}/>
+            <input
+              type="submit"
+              value="Search"
+              disabled={search === '' ? true : false}
+            />
           </form>
         </div>
         <div>
@@ -185,12 +210,17 @@ export default function ProductIndex() {
             {products && products.length > 0 ? (
               isAdmin ? (
                 <>
-                    <button onClick={handleInventorySubmit}>Update Inventory</button>
-                    {products.map((p, index) => (
+                  <button onClick={handleInventorySubmit}>
+                    Update Inventory
+                  </button>
+                  {products.map((p, index) => (
                     <div key={index}>
-                        <Inventory product={p} setUpdatedProducts={setUpdatedProducts} />
+                      <Inventory
+                        product={p}
+                        setUpdatedProducts={setUpdatedProducts}
+                      />
                     </div>
-                    ))}
+                  ))}
                 </>
               ) : (
                 products.map((p, index) => (
