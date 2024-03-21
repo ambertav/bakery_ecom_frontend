@@ -1,19 +1,20 @@
 import axios from '../../utilities/axiosConfig';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../app/firebase/AuthContext';
-import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { ProductType } from '../../../types/types';
+import { useState, useEffect, ChangeEvent, FormEvent, MouseEvent } from 'react';
+import { FormInput, ProductType } from '../../../types/types';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Filter from '@/components/Filter';
 import Pagination from '@/components/Pagination';
 import Product from '@/components/Product';
+import Inventory from '@/components/Inventory';
 
 export default function ProductIndex() {
   const router = useRouter();
   const { isAdmin } = useAuth();
 
-  const [products, setProducts] = useState<ProductType[] | null>(null);
+  const [products, setProducts] = useState<ProductType[]>([]);
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(
     Number(router.query.page) || 1
@@ -22,6 +23,7 @@ export default function ProductIndex() {
   const [sort, setSort] = useState<string>('recommended');
   const [search, setSearch] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [updatedProducts, setUpdatedProducts] = useState<FormInput>({});
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -126,6 +128,26 @@ export default function ProductIndex() {
     });
   };
 
+  const handleInventorySubmit = async (evt: MouseEvent<HTMLButtonElement>) => {
+    evt.preventDefault();
+    // if the updatedProducts state is empty, return
+    if (Object.keys(updatedProducts).length === 0) return;
+
+    try {
+        const response = await axios.put('/product/inventory/update', updatedProducts, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (response.status === 200) {
+            setIsLoading(true);
+            router.push('/products');
+        }
+
+    } catch (error) {
+        console.error('Error updating inventory: ', error);
+    }
+  }
+
   function loaded() {
     return (
       <main>
@@ -155,17 +177,28 @@ export default function ProductIndex() {
               placeholder="search products"
               onChange={handleSearchChange}
             />
-            <input type="submit" value="Search" />
+            <input type="submit" value="Search" disabled={search === '' ? true : false}/>
           </form>
         </div>
         <div>
           <ul>
-            {products !== null ? (
-              products.map((p, key) => (
-                <div key={key}>
-                  <Product product={p} page="index" />
-                </div>
-              ))
+            {products && products.length > 0 ? (
+              isAdmin ? (
+                <>
+                    <button onClick={handleInventorySubmit}>Update Inventory</button>
+                    {products.map((p, index) => (
+                    <div key={index}>
+                        <Inventory product={p} setUpdatedProducts={setUpdatedProducts} />
+                    </div>
+                    ))}
+                </>
+              ) : (
+                products.map((p, index) => (
+                  <div key={index}>
+                    <Product product={p} page="index" />
+                  </div>
+                ))
+              )
             ) : (
               <div>No products</div>
             )}
