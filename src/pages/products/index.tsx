@@ -1,5 +1,5 @@
 import axios from '../../utilities/axiosConfig';
-import { useRouter } from 'next/router';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../app/firebase/AuthContext';
 import { useState, useEffect, ChangeEvent, FormEvent, MouseEvent } from 'react';
 import { FormInput, ProductType } from '../../../types/types';
@@ -12,15 +12,17 @@ import Inventory from '@/components/Inventory';
 
 export default function ProductIndex() {
   const router = useRouter();
+  const params = useSearchParams();
+
   const { isAdmin } = useAuth();
 
   const [products, setProducts] = useState<ProductType[]>([]);
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(
-    Number(router.query.page) || 1
+    Number(params?.get('page')) || 1
   );
   const [category, setCategory] = useState<string>(
-    (router.query.category as string) || ''
+    (params?.get('category') as string) || ''
   );
   const [sort, setSort] = useState<string>('recommended');
   const [search, setSearch] = useState<string>('');
@@ -31,42 +33,40 @@ export default function ProductIndex() {
     let timeout: NodeJS.Timeout;
 
     const fetchProducts = async () => {
-      if (router.isReady) {
-        // defining parameters for axios call
-        const categoryParam = category ? `category=${category}` : '';
-        const pageParam = `page=${router.query.page}`;
-        const sortParam = sort ? `sort=${sort}` : '';
-        const searchParam = search ? `search=${search}` : '';
+      // defining parameters for axios call
+      const categoryParam = category ? `category=${category}` : '';
+      const pageParam = `page=${params?.get('page')}`;
+      const sortParam = sort ? `sort=${sort}` : '';
+      const searchParam = search ? `search=${search}` : '';
 
-        // combining paramaters
-        const queryParams = [categoryParam, searchParam, sortParam, pageParam]
-          .filter((param) => param)
-          .join('&');
+      // combining paramaters
+      const queryParams = [categoryParam, searchParam, sortParam, pageParam]
+        .filter((param) => param)
+        .join('&');
 
-        // urlPath with query params
-        const urlPath = `product/?${queryParams}`;
+      // urlPath with query params
+      const urlPath = `product/?${queryParams}`;
 
-        try {
-          const response = await axios.get(urlPath);
-          if (response.status === 200) {
-            setProducts(response.data.products);
-            setTotalPages(response.data.totalPages);
-            setCurrentPage(response.data.currentPage);
-          }
-        } catch (error) {
-          console.error('Error fetching products: ', error);
-        } finally {
-          timeout = setTimeout(() => {
-            setIsLoading(false);
-          }, 500);
+      try {
+        const response = await axios.get(urlPath);
+        if (response.status === 200) {
+          setProducts(response.data.products);
+          setTotalPages(response.data.totalPages);
+          setCurrentPage(response.data.currentPage);
         }
+      } catch (error) {
+        console.error('Error fetching products: ', error);
+      } finally {
+        timeout = setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
       }
     };
 
     fetchProducts();
 
     return () => clearTimeout(timeout);
-  }, [router.isReady, router.query, currentPage, category]);
+  }, [params?.getAll, currentPage, category]);
 
   // useEffect to update category from navigation links
   useEffect(() => {
@@ -74,23 +74,21 @@ export default function ProductIndex() {
 
     setIsLoading(true);
 
-    if (router.query.category) setCategory(router.query.category as string);
-    else setCategory('');
+    setCategory(params?.get('category') ?? '');
 
     timeout = setTimeout(() => {
       setIsLoading(false);
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [router.isReady, router.query.category]);
+  }, [params?.getAll]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     setIsLoading(true);
-    router.push({
-      pathname: router.pathname,
-      query: { ...router.query, page: page },
-    });
+    const query = { ...params?.getAll, page: String(page) };
+    const queryString = new URLSearchParams(query).toString();
+    router.push(`products?${queryString}`);
   };
 
   const handleFilterChange = (
@@ -123,10 +121,8 @@ export default function ProductIndex() {
     setCurrentPage(1);
     setIsLoading(true);
 
-    router.push({
-      pathname: router.pathname,
-      query: { ...newQuery },
-    });
+    const queryString = new URLSearchParams(newQuery).toString();
+    router.push(`products?${queryString}`);
   };
 
   const handleSearchChange = (evt: ChangeEvent<HTMLInputElement>) => {
@@ -138,12 +134,11 @@ export default function ProductIndex() {
     setSort('recommended');
     setIsLoading(true);
 
-    let categoryParam = category ? { category } : {};
+    let categoryParam: { category?: string } = category ? { category } : {};
 
-    router.push({
-      pathname: router.pathname,
-      query: { ...categoryParam, search: search },
-    });
+    const query = { ...categoryParam, search: search };
+    const queryString = new URLSearchParams(query).toString();
+    router.push(`products?${queryString}`);
   };
 
   const handleInventorySubmit = async (evt: MouseEvent<HTMLButtonElement>) => {

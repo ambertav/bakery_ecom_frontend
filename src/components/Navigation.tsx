@@ -1,4 +1,4 @@
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../app/firebase/AuthContext';
 import Link from 'next/link';
 
@@ -8,10 +8,9 @@ function Navigation() {
 
   // using router to push query params to cause load on products page with category filter applied
   const handleParams = (category: string) => {
-    router.push({
-      pathname: '/products',
-      query: { category: category },
-    });
+    const query = { category: category };
+    const queryString = new URLSearchParams(query).toString();
+    router.push(`/products?${queryString}`);
   };
 
   return (
@@ -44,30 +43,33 @@ function Navigation() {
           </ul>
         </li>
 
-        <li>
-          <Link href="/cart">Cart</Link>
-        </li>
-
-        {user && isAdmin && (
-          <>
+        {!isAdmin && (
             <li>
-              <Link href="/products/create">Add Products</Link>
+            <Link href="/cart">Cart</Link>
             </li>
-            {/* <li><Link href='/fulfillment'>Fulfillment</Link></li> */}
-          </>
         )}
 
         {user && (
-          <>
-            <li>
-              <Link href="/account">Account</Link>
-            </li>
+            <>
+                {isAdmin && (
+                    <>
+                        <li>
+                        <Link href="/products/create">Add Products</Link>
+                        </li>
+                        <li><Link href='/fulfillment'>Fulfillment</Link></li>
+                    </>
+                )}
+                {!isAdmin && (
+                    <li>
+                    <Link href="/account">Account</Link>
+                    </li>
+                )}
             <li>
               <Link href="/logout">Logout</Link>
             </li>
-          </>
+            </>
         )}
-
+        
         {!user && (
           <>
             <li>
