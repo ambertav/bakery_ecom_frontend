@@ -27,7 +27,9 @@ export interface CartItem {
     name: string;
     image: string;
     price: number;
+    portion: string;
     quantity: number;
+    orderId: number | null;
 }
 
 export interface ShoppingCart extends Array<CartItem> {}

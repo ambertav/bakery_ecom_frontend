@@ -1,6 +1,6 @@
 import axios from '../../utilities/axiosConfig';
 import Link from 'next/link';
-import { useState, useEffect, FormEvent, MouseEvent } from 'react';
+import { useState, useEffect, FormEvent, MouseEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/app/firebase/AuthContext';
 import { ProductType, CartItem, ShoppingCart } from '../../../types/types';
@@ -12,12 +12,23 @@ export default function ProductShow() {
   const { user, isAdmin } = useAuth();
   const router = useRouter();
   const [product, setProduct] = useState<ProductType | null>(null);
+  const [validPortions, setValidPortions] = useState<string[]>([]);
   const [formState, setFormState] = useState({
     qty: 1,
+    portion: ''
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { id } = router.query;
+
+  const constructPortionArray = (category : string) : string[] => {
+    let portions : string[] = ['whole'];
+
+    if (category === 'cupcake' || category === 'donut') portions.push('mini');
+    else if (category === 'cake' || category === 'pie') portions.push('mini', 'slice');
+
+    return portions;
+  }
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -25,7 +36,10 @@ export default function ProductShow() {
     const fetchProduct = async () => {
       try {
         const response = await axios.get(`product/${id}`);
-        if (response.status === 200) setProduct(response.data.product);
+        if (response.status === 200) {
+            setProduct(response.data.product);
+            setValidPortions(constructPortionArray(response.data.product.category));
+        }
       } catch (error) {
         console.error('Error fetching product: ', error);
       } finally {
@@ -39,16 +53,26 @@ export default function ProductShow() {
     return () => clearTimeout(timeout);
   }, []);
 
-  function generateUniqueId() {
+  const handleChange = (evt : ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>) => {
+    let { name, value } = evt.target;
+
+    setFormState((prev: any) => ({
+        ...prev,
+        [name]: value,
+      }));
+  }
+
+  const generateUniqueId = () => {
     const now = new Date();
     return now.getTime() + now.getMilliseconds(); // gets timestamp id
   }
 
-  async function handleAddToCart(evt: FormEvent<HTMLFormElement>) {
+  const handleAddToCart = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
     const data = {
       id: product!.id,
-      qty: formState.qty,
+      qty: Number(formState.qty),
+      portion: formState.portion,
     };
 
     if (user) {
@@ -81,6 +105,8 @@ export default function ProductShow() {
         image: product!.image,
         price: product!.price,
         quantity: data.qty,
+        portion: data.portion,
+        orderId: null,
       };
 
       // checks if product is already in cart
@@ -112,17 +138,25 @@ export default function ProductShow() {
                       handleAddToCart(evt);
                     }}
                   >
+                    <select
+                        id="portion"
+                        name="portion"
+                        value={formState.portion}
+                        onChange={handleChange}
+                        required={true}
+                    >
+                        <option value=''>Select a portion size</option>
+                        {validPortions && validPortions.map((p, index) => 
+                        <option key={index} value={p.toUpperCase()}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                        )}
+                    </select>
                     <input
                       type="number"
                       name="qty"
                       id="qty"
                       value={formState.qty}
                       min={1}
-                      onChange={(evt) => {
-                        setFormState({
-                          qty: Number(evt.target.value),
-                        });
-                      }}
+                      onChange={handleChange}
                     />
                     <input type="submit" value="Add to Cart" />
                   </form>
