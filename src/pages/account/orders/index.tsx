@@ -7,57 +7,62 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 import { OrderType } from '../../../../types/types';
 
-export default function OrderHistory () {
-    const { user } = useAuth();
+export default function OrderHistory() {
+  const { user } = useAuth();
 
-    const [ isLoading, setIsLoading ] = useState <boolean> (true);
-    const [ orders, setOrders ] = useState <OrderType[] | null> (null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [orders, setOrders] = useState<OrderType[] | null>(null);
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            if (user) {
-                try {
-                    const response = await axios.get('order/');
-                    if (response.status === 200) setOrders(response.data.orders);
-                } catch (error) {
-                    console.error('Error fetching order history: ', error);
-                }
-            }
-        }
-        fetchOrders();
-        setTimeout(() => {
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    const fetchOrders = async () => {
+      if (user) {
+        try {
+          const response = await axios.get('order/');
+          if (response.status === 200) setOrders(response.data.orders);
+        } catch (error) {
+          console.error('Error fetching order history: ', error);
+        } finally {
+          timeout = setTimeout(() => {
             setIsLoading(false);
-        }, 1000);
-    }, []);
+          }, 1000);
+        }
+      }
+    };
+    fetchOrders();
 
-    function loaded () {
-        return (
-            <main>
-                <h1>Order History</h1>
-                <div>
-                    {orders ? (
-                        <ul>
-                            {orders!.map((o, index) => (
-                                <li key={index}>
-                                    <p>{ o.id }</p>
-                                    <p>{ o.date }</p>
-                                    <p>{ o.totalPrice }</p>
-                                    <p>{ o.status }</p>
-                                    <Link href={`/account/orders/${o.id}`}>View Order</Link>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        'no orders'
-                    )}
-                </div>
-            </main>
-        );
-    }
+    return () => clearTimeout(timeout);
+  }, []);
 
-    function loading () {
-        return <LoadingSpinner />;
-    }
+  function loaded() {
+    return (
+      <main>
+        <h1>Order History</h1>
+        <div>
+          {orders ? (
+            <ul>
+              {orders!.map((o, index) => (
+                <li key={index}>
+                  <p>{o.id}</p>
+                  <p>{o.date}</p>
+                  <p>{o.totalPrice}</p>
+                  <p>{o.status}</p>
+                  <Link href={`/account/orders/${o.id}`}>View Order</Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            'no orders'
+          )}
+        </div>
+      </main>
+    );
+  }
 
-    return isLoading ? loading() : loaded();
+  function loading() {
+    return <LoadingSpinner />;
+  }
+
+  return isLoading ? loading() : loaded();
 }
