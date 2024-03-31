@@ -50,6 +50,6 @@ export interface OrderType {
     totalPrice: number;
     date: string;
     status: string;
-    shippingMethod: string;
+    deliveryMethod: string;
     paymentStatus: string;
 }

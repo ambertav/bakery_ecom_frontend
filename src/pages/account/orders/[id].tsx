@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '@/app/firebase/AuthContext';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
+import CartItem from '@/components/CartItem';
 
 import { OrderType, AddressType, ShoppingCart } from '../../../../types/types';
 
@@ -30,7 +31,7 @@ export default function OrderDetail() {
               id,
               date,
               paymentStatus,
-              shippingMethod,
+              deliveryMethod,
               status,
               totalPrice,
             } = response.data.order;
@@ -38,7 +39,7 @@ export default function OrderDetail() {
               id,
               date,
               paymentStatus,
-              shippingMethod,
+              deliveryMethod,
               status,
               totalPrice,
             });
@@ -65,22 +66,18 @@ export default function OrderDetail() {
         <h1>Order</h1>
         <div>
           <div>
-            {items
-              ? items.map((i, index) => (
-                  <li key={index}>
-                    <p>{i.name}</p>
-                    <img src={i.image} alt={i.name} />
-                    <p>{i.quantity}</p>
-                    <p>{i.price}</p>
-                    <Link href={`/products/${i.productId}`}>View Product</Link>
-                  </li>
-                ))
-              : 'no items'}
+            {items &&
+              items.map((i, index) => (
+                <li key={index}>
+                  <CartItem item={i} />
+                  <Link href={`/products/${i.productId}`}>View Product</Link>
+                </li>
+              ))}
           </div>
           <div>
             <p>Placed On: {order && order.date}</p>
             <p>Status: {order && order.status}</p>
-            <p>Shipping method: {order && order.shippingMethod}</p>
+            <p>Shipping method: {order && order.deliveryMethod}</p>
             <p>Payment status: {order && order.paymentStatus}</p>
           </div>
           <div>

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 
 import { useCartContext } from '../../components/CartContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import CartItem from '@/components/CartItem';
 
 export default function Cart() {
   const cartContext = useCartContext();
@@ -37,9 +38,7 @@ export default function Cart() {
                   return (
                     <li key={key}>
                       <div>
-                        <p>{c.name}</p>
-                        <img src={c.image} alt={c.name} />{' '}
-                        {/* Add alt attribute */}
+                        <CartItem item={c} />
                         <div>
                           <button
                             onClick={() => {
@@ -48,7 +47,6 @@ export default function Cart() {
                           >
                             -
                           </button>
-                          <p>{c.quantity}</p>
                           <button
                             onClick={() => {
                               updateQuantity('plus', c.id, c.quantity);
@@ -57,7 +55,6 @@ export default function Cart() {
                             +
                           </button>
                         </div>
-                        <p>{c.price}</p>
                         <div>
                           <button
                             onClick={() => {
