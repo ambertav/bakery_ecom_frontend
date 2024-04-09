@@ -49,7 +49,9 @@ export interface OrderType {
     id: number;
     totalPrice: number;
     date: string;
+    items?: CartItem[];
     status: string;
     deliveryMethod: string;
     paymentStatus: string;
+    address?: AddressType;
 }
