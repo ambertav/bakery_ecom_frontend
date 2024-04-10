@@ -6,6 +6,7 @@ import { FormInput, ProductType } from '../../../types/types';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Filter from '@/components/Filter';
+import Sort from '@/components/Sort';
 import Pagination from '@/components/Pagination';
 import Product from '@/components/Product';
 import Inventory from '@/components/Inventory';
@@ -91,10 +92,7 @@ export default function ProductIndex() {
     router.push(`products?${queryString}`);
   };
 
-  const handleFilterChange = (
-    selectedCategory: string | null,
-    selectedSort: string | null
-  ) => {
+  const handleFilterChange = (selectedCategory: string) => {
     const newQuery: any = {};
 
     if (selectedCategory !== null) {
@@ -107,22 +105,20 @@ export default function ProductIndex() {
       selectedCategory ? (newQuery['category'] = selectedCategory) : '';
     }
 
-    if (selectedSort !== null) {
-      // set sort and add to query
-      setSort(selectedSort);
-      newQuery['sort'] = selectedSort;
+    filterSortSearchUpdates(new URLSearchParams(newQuery).toString());
+  };
 
-      // add category and search to query to maintain those parameters
-      category ? (newQuery['category'] = category) : '';
-      search ? (newQuery['search'] = search) : '';
-    }
+  const handleSortChange = (selectedSort: string) => {
+    const newQuery: any = {};
 
-    // defaulting to page one on any change
-    setCurrentPage(1);
-    setIsLoading(true);
+    setSort(selectedSort);
+    newQuery['sort'] = selectedSort;
 
-    const queryString = new URLSearchParams(newQuery).toString();
-    router.push(`products?${queryString}`);
+    // add category and search to query to maintain those parameters
+    category ? (newQuery['category'] = category) : '';
+    search ? (newQuery['search'] = search) : '';
+
+    filterSortSearchUpdates(new URLSearchParams(newQuery).toString());
   };
 
   const handleSearchChange = (evt: ChangeEvent<HTMLInputElement>) => {
@@ -138,6 +134,14 @@ export default function ProductIndex() {
 
     const query = { ...categoryParam, search: search };
     const queryString = new URLSearchParams(query).toString();
+    router.push(`products?${queryString}`);
+  };
+
+  const filterSortSearchUpdates = (queryString: string) => {
+    // defaulting to page one on any change
+    setCurrentPage(1);
+    setIsLoading(true);
+
     router.push(`products?${queryString}`);
   };
 
@@ -171,6 +175,11 @@ export default function ProductIndex() {
         <div>
           <Filter
             categories={['cake', 'cupcake', 'pie', 'cookie', 'donut', 'pastry']}
+            category={category}
+            onFilterChange={handleFilterChange}
+          />
+
+          <Sort
             sortOptions={[
               'recommended',
               'priceAsc',
@@ -178,9 +187,8 @@ export default function ProductIndex() {
               'nameAsc',
               'nameDesc',
             ]}
-            category={category}
             sort={sort}
-            onFilterChange={handleFilterChange}
+            onSortChange={handleSortChange}
           />
         </div>
         <div>

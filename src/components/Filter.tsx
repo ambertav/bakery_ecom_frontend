@@ -1,32 +1,18 @@
-import { useRouter } from 'next/router';
-import { ChangeEvent, Fragment } from 'react';
+import { ChangeEvent } from 'react';
 
 interface FilterProps {
   categories: string[];
-  sortOptions: string[];
   category: string;
-  sort: string;
-  onFilterChange: (
-    selectedCategory: string | null,
-    selectedSort: string | null
-  ) => void;
+  onFilterChange: (selectedCategory: string) => void;
 }
 
 export default function Filter({
   categories,
-  sortOptions,
   category,
-  sort,
   onFilterChange,
 }: FilterProps) {
-  const router = useRouter();
-
   const changeCategory = (selectedCategory: string) => {
-    onFilterChange(selectedCategory, null);
-  };
-
-  const changeSort = (selectedSort: string) => {
-    onFilterChange(null, selectedSort);
+    onFilterChange(selectedCategory);
   };
 
   return (
@@ -52,37 +38,6 @@ export default function Filter({
               ))}
             </select>
           </div>
-        </div>
-      </div>
-
-      <div>
-        Sort
-        <div>
-          {sortOptions.map((s, index) => (
-            <Fragment key={index}>
-              <input
-                type="radio"
-                name="sort"
-                id={s}
-                value={s}
-                checked={sort === s}
-                onChange={() => changeSort(s)}
-              />
-              <label htmlFor={s}>
-                {s === 'recommended'
-                  ? 'Recommended'
-                  : s === 'priceAsc'
-                  ? 'Price: Low to High'
-                  : s === 'priceDesc'
-                  ? 'Price: High to Low'
-                  : s === 'nameAsc'
-                  ? 'Name: A to Z'
-                  : s === 'nameDesc'
-                  ? 'Name: Z to A'
-                  : ''}
-              </label>
-            </Fragment>
-          ))}
         </div>
       </div>
     </>
