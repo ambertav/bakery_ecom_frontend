@@ -7,6 +7,7 @@ import { FormInput, ProductType } from '../../../types/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Filter from '@/components/Filter';
 import Sort from '@/components/Sort';
+import Search from '@/components/Search';
 import Pagination from '@/components/Pagination';
 import Product from '@/components/Product';
 import Inventory from '@/components/Inventory';
@@ -26,7 +27,6 @@ export default function ProductIndex() {
     (params?.get('category') as string) || ''
   );
   const [sort, setSort] = useState<string>('recommended');
-  const [search, setSearch] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [updatedProducts, setUpdatedProducts] = useState<FormInput>({});
 
@@ -38,7 +38,9 @@ export default function ProductIndex() {
       const categoryParam = category ? `category=${category}` : '';
       const pageParam = `page=${params?.get('page')}`;
       const sortParam = sort ? `sort=${sort}` : '';
-      const searchParam = search ? `search=${search}` : '';
+      const searchParam = params?.get('search')
+        ? `search=${params?.get('search')}`
+        : '';
 
       // combining paramaters
       const queryParams = [categoryParam, searchParam, sortParam, pageParam]
@@ -99,9 +101,9 @@ export default function ProductIndex() {
       // set category and add to query
       setCategory(selectedCategory);
 
-      // reset sort and search parameters, only add category to query
+      // reset sort parameters, only add category to query
       setSort('recommended');
-      setSearch('');
+
       selectedCategory ? (newQuery['category'] = selectedCategory) : '';
     }
 
@@ -116,25 +118,20 @@ export default function ProductIndex() {
 
     // add category and search to query to maintain those parameters
     category ? (newQuery['category'] = category) : '';
-    search ? (newQuery['search'] = search) : '';
+    params?.get('search') ? (newQuery['search'] = params?.get('search')) : '';
 
     filterSortSearchUpdates(new URLSearchParams(newQuery).toString());
   };
 
-  const handleSearchChange = (evt: ChangeEvent<HTMLInputElement>) => {
-    setSearch(evt.target.value);
-  };
-
-  const handleSearchSubmit = (evt: FormEvent) => {
-    setCurrentPage(1);
+  const handleSearchSubmit = (search: string) => {
     setSort('recommended');
-    setIsLoading(true);
 
     let categoryParam: { category?: string } = category ? { category } : {};
+    let searchParam: { search?: string } = search ? { search } : {};
 
-    const query = { ...categoryParam, search: search };
-    const queryString = new URLSearchParams(query).toString();
-    router.push(`products?${queryString}`);
+    const newQuery = { ...categoryParam, ...searchParam };
+
+    filterSortSearchUpdates(new URLSearchParams(newQuery).toString());
   };
 
   const filterSortSearchUpdates = (queryString: string) => {
@@ -191,23 +188,7 @@ export default function ProductIndex() {
             onSortChange={handleSortChange}
           />
         </div>
-        <div>
-          <form onSubmit={handleSearchSubmit}>
-            <label htmlFor="search">Search</label>
-            <input
-              type="text"
-              name="search"
-              id="search"
-              placeholder="search products"
-              onChange={handleSearchChange}
-            />
-            <input
-              type="submit"
-              value="Search"
-              disabled={search === '' ? true : false}
-            />
-          </form>
-        </div>
+        <Search onSearchSubmit={handleSearchSubmit} />
         <div>
           <ul>
             {products && products.length > 0 ? (
