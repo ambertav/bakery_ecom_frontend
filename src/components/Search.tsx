@@ -1,11 +1,12 @@
 import { useSearchParams } from 'next/navigation';
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, FormEvent } from 'react';
 
 interface SearchProps {
+  placeholder: string;
   onSearchSubmit: (search: string) => void;
 }
 
-export default function Search({ onSearchSubmit }: SearchProps) {
+export default function Search({ placeholder, onSearchSubmit }: SearchProps) {
   const params = useSearchParams();
 
   // controls form state
@@ -38,7 +39,7 @@ export default function Search({ onSearchSubmit }: SearchProps) {
           type="text"
           name="search"
           id="search"
-          placeholder="search products"
+          placeholder={placeholder}
           onChange={(evt) => setSearch(evt.target.value)}
         />
         <input

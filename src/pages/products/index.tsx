@@ -1,7 +1,7 @@
 import axios from '../../utilities/axiosConfig';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../app/firebase/AuthContext';
-import { useState, useEffect, ChangeEvent, FormEvent, MouseEvent } from 'react';
+import { useState, useEffect, MouseEvent } from 'react';
 import { FormInput, ProductType } from '../../../types/types';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -171,10 +171,17 @@ export default function ProductIndex() {
         <h1>All Products</h1>
         <div>
           <Filter
-            filterOptions={['cake', 'cupcake', 'pie', 'cookie', 'donut', 'pastry']}
+            filterOptions={[
+              'cake',
+              'cupcake',
+              'pie',
+              'cookie',
+              'donut',
+              'pastry',
+            ]}
             filter={category}
-            label='Category'
-            id='category'
+            label="Category"
+            id="category"
             onFilterChange={handleFilterChange}
           />
 
@@ -190,7 +197,10 @@ export default function ProductIndex() {
             onSortChange={handleSortChange}
           />
         </div>
-        <Search onSearchSubmit={handleSearchSubmit} />
+        <Search
+          placeholder="search products"
+          onSearchSubmit={handleSearchSubmit}
+        />
         <div>
           <ul>
             {products && products.length > 0 ? (
