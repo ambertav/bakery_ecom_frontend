@@ -22,30 +22,33 @@ export default function Fulfillment() {
   );
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(
-      Number(params?.get('page')) || 1
-    );
-    // used to change display and to construct fetch endpoint
-    const [activeTab, setActiveTab] = useState<string>('pending');
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    Number(params?.get('page')) || 1
+  );
+  // used to change display and to construct fetch endpoint
+  const [activeTab, setActiveTab] = useState<string>('pending');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
 
     const fetchOrdersForFulfillment = async () => {
-              // defining parameters for axios call
-      const deliveryParam = deliveryMethod ? `delivery-method=${deliveryMethod}` : '';
+      // defining parameters for axios call
+      const deliveryParam = deliveryMethod
+        ? `delivery-method=${deliveryMethod}`
+        : '';
       const pageParam = `page=${params?.get('page') || 1}`;
+      const searchParam = params?.get('search')
+        ? `search=${params?.get('search')}`
+        : '';
 
+      const queryParams = [deliveryParam, pageParam, searchParam]
+        .filter((param) => param)
+        .join('&');
 
-      const queryParams = [deliveryParam, pageParam]
-      .filter((param) => param)
-      .join('&');
-
-            // urlPath with query params
-            const url = `order/fulfillment/${activeTab}/?${queryParams}`;
+      // urlPath with query params
+      const url = `order/fulfillment/${activeTab}/?${queryParams}`;
 
       try {
-
         const response = await axios.get(url);
         if (response.status === 200) {
           setOrders(response.data.orders);
@@ -84,13 +87,21 @@ export default function Fulfillment() {
       // set category and add to query
       setDeliveryMethod(selectedDeliveryMethod);
 
-      selectedDeliveryMethod ? (newQuery['delivery-method'] = selectedDeliveryMethod) : '';
+      selectedDeliveryMethod
+        ? (newQuery['delivery-method'] = selectedDeliveryMethod)
+        : '';
     }
 
-    paramUpdates(new URLSearchParams(newQuery).toString());
+    handleParamUpdates(new URLSearchParams(newQuery).toString());
   };
 
-  const paramUpdates = (queryString: string) => {
+  const handleSearchSubmit = (search: string) => {
+    let searchParam: { search?: string } = search ? { search } : {};
+    const newQuery = { ...searchParam };
+    handleParamUpdates(new URLSearchParams(newQuery).toString());
+  };
+
+  const handleParamUpdates = (queryString: string) => {
     // defaulting to page one on any change
     setCurrentPage(1);
     setIsLoading(true);
@@ -98,32 +109,37 @@ export default function Fulfillment() {
     router.push(`fulfillment?${queryString}`);
   };
 
-
   function loaded() {
     return (
       <main>
         <h1>Fulfillment</h1>
         <Filter
-            filterOptions={['standard', 'express', 'next day', 'pick up']}
-            filter={deliveryMethod}
-            label='Delivery Method'
-            id='deliveryMethod'
-            onFilterChange={handleFilterChange}
-          />
-        <div>
-          <button
-            onClick={() => handleTabChange('pending')}
-            disabled={activeTab === 'pending'}
-          >
-            Pending
-          </button>
-          <button
-            onClick={() => handleTabChange('in-progress')}
-            disabled={activeTab === 'in-progress'}
-          >
-            In Progress
-          </button>
-        </div>
+          filterOptions={['standard', 'express', 'next day', 'pick up']}
+          filter={deliveryMethod}
+          label="Delivery Method"
+          id="deliveryMethod"
+          onFilterChange={handleFilterChange}
+        />
+        <Search
+          placeholder="search by order ID"
+          onSearchSubmit={handleSearchSubmit}
+        />
+        {params?.get('search') && (
+          <div>
+            <button
+              onClick={() => handleTabChange('pending')}
+              disabled={activeTab === 'pending'}
+            >
+              Pending
+            </button>
+            <button
+              onClick={() => handleTabChange('in-progress')}
+              disabled={activeTab === 'in-progress'}
+            >
+              In Progress
+            </button>
+          </div>
+        )}
         <div>
           <table>
             <thead>
