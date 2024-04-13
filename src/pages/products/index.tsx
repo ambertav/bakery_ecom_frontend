@@ -48,10 +48,10 @@ export default function ProductIndex() {
         .join('&');
 
       // urlPath with query params
-      const urlPath = `product/?${queryParams}`;
+      const url = `product/?${queryParams}`;
 
       try {
-        const response = await axios.get(urlPath);
+        const response = await axios.get(url);
         if (response.status === 200) {
           setProducts(response.data.products);
           setTotalPages(response.data.totalPages);
@@ -107,7 +107,7 @@ export default function ProductIndex() {
       selectedCategory ? (newQuery['category'] = selectedCategory) : '';
     }
 
-    filterSortSearchUpdates(new URLSearchParams(newQuery).toString());
+    handleParamUpdates(new URLSearchParams(newQuery).toString());
   };
 
   const handleSortChange = (selectedSort: string) => {
@@ -120,7 +120,7 @@ export default function ProductIndex() {
     category ? (newQuery['category'] = category) : '';
     params?.get('search') ? (newQuery['search'] = params?.get('search')) : '';
 
-    filterSortSearchUpdates(new URLSearchParams(newQuery).toString());
+    handleParamUpdates(new URLSearchParams(newQuery).toString());
   };
 
   const handleSearchSubmit = (search: string) => {
@@ -131,10 +131,10 @@ export default function ProductIndex() {
 
     const newQuery = { ...categoryParam, ...searchParam };
 
-    filterSortSearchUpdates(new URLSearchParams(newQuery).toString());
+    handleParamUpdates(new URLSearchParams(newQuery).toString());
   };
 
-  const filterSortSearchUpdates = (queryString: string) => {
+  const handleParamUpdates = (queryString: string) => {
     // defaulting to page one on any change
     setCurrentPage(1);
     setIsLoading(true);
@@ -171,8 +171,10 @@ export default function ProductIndex() {
         <h1>All Products</h1>
         <div>
           <Filter
-            categories={['cake', 'cupcake', 'pie', 'cookie', 'donut', 'pastry']}
-            category={category}
+            filterOptions={['cake', 'cupcake', 'pie', 'cookie', 'donut', 'pastry']}
+            filter={category}
+            label='Category'
+            id='category'
             onFilterChange={handleFilterChange}
           />
 

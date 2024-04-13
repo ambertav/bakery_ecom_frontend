@@ -1,18 +1,24 @@
 import { ChangeEvent } from 'react';
 
 interface FilterProps {
-  categories: string[];
-  category: string;
-  onFilterChange: (selectedCategory: string) => void;
+  filterOptions: string[];
+  filter: string;
+  label: string;
+  id: string;
+  onFilterChange: (filterParam: string) => void;
 }
 
 export default function Filter({
-  categories,
-  category,
+  filterOptions,
+  filter,
+  label,
+  id,
   onFilterChange,
 }: FilterProps) {
-  const changeCategory = (selectedCategory: string) => {
-    onFilterChange(selectedCategory);
+  const changeFilter = (filterParam: string) => {
+    // format param to lowercase
+    // if spaces, replace with underscores for visual aid and use in backend
+    onFilterChange(filterParam.toLowerCase().replace(/\s+/g, '_'));
   };
 
   return (
@@ -20,20 +26,20 @@ export default function Filter({
       <div>
         Filter
         <div>
-          <div key={'category'}>
-            <label htmlFor={'category'}>Filter by Category</label>
+          <div key={id}>
+            <label htmlFor={id}>Filter by {label}</label>
             <select
-              id="category"
-              name="category"
-              value={category}
+              id={id}
+              name={id}
+              value={filter}
               onChange={(evt: ChangeEvent<HTMLSelectElement>) =>
-                changeCategory(evt.target.value)
+                changeFilter(evt.target.value)
               }
             >
-              <option value="">Select a category</option>
-              {categories.map((c, index) => (
-                <option key={index} value={c}>
-                  {c.charAt(0).toUpperCase() + c.slice(1)}
+              <option value="">Select a {label.toLowerCase()}</option>
+              {filterOptions.map((opt, index) => (
+                <option key={index} value={opt}>
+                  {opt}
                 </option>
               ))}
             </select>
