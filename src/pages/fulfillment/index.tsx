@@ -6,6 +6,8 @@ import { OrderType } from '../../../types/types';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import FulfillmentItem from '@/components/FulfillmentItem';
+import Filter from '@/components/Filter';
+import Search from '@/components/Search';
 import Pagination from '@/components/Pagination';
 
 export default function Fulfillment() {
@@ -14,24 +16,37 @@ export default function Fulfillment() {
 
   const { isAdmin } = useAuth();
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [orders, setOrders] = useState<OrderType[]>([]);
+  const [deliveryMethod, setDeliveryMethod] = useState<string>(
+    (params?.get('delivery-method') as string) || ''
+  );
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(
-    Number(params?.get('page')) || 1
-  );
-  // used to change display and to construct fetch endpoint
-  const [activeTab, setActiveTab] = useState<string>('pending');
+      Number(params?.get('page')) || 1
+    );
+    // used to change display and to construct fetch endpoint
+    const [activeTab, setActiveTab] = useState<string>('pending');
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
 
     const fetchOrdersForFulfillment = async () => {
+              // defining parameters for axios call
+      const deliveryParam = deliveryMethod ? `delivery-method=${deliveryMethod}` : '';
+      const pageParam = `page=${params?.get('page') || 1}`;
+
+
+      const queryParams = [deliveryParam, pageParam]
+      .filter((param) => param)
+      .join('&');
+
+            // urlPath with query params
+            const url = `order/fulfillment/${activeTab}/?${queryParams}`;
+
       try {
-        const pageParam = `page=${params?.get('page') || 1}`;
-        const response = await axios.get(
-          `order/fulfillment/${activeTab}/?${pageParam}`
-        );
+
+        const response = await axios.get(url);
         if (response.status === 200) {
           setOrders(response.data.orders);
           setTotalPages(response.data.totalPages);
@@ -49,7 +64,7 @@ export default function Fulfillment() {
     fetchOrdersForFulfillment();
 
     return () => clearTimeout(timeout);
-  }, [activeTab, params?.get('page')]);
+  }, [activeTab, params?.getAll, deliveryMethod]);
 
   const handleTabChange = (tabName: string) => {
     if (activeTab === tabName) return;
@@ -62,10 +77,39 @@ export default function Fulfillment() {
     router.push(`fulfillment/?page=${page}`);
   };
 
+  const handleFilterChange = (selectedDeliveryMethod: string) => {
+    const newQuery: any = {};
+
+    if (selectedDeliveryMethod !== null) {
+      // set category and add to query
+      setDeliveryMethod(selectedDeliveryMethod);
+
+      selectedDeliveryMethod ? (newQuery['delivery-method'] = selectedDeliveryMethod) : '';
+    }
+
+    paramUpdates(new URLSearchParams(newQuery).toString());
+  };
+
+  const paramUpdates = (queryString: string) => {
+    // defaulting to page one on any change
+    setCurrentPage(1);
+    setIsLoading(true);
+
+    router.push(`fulfillment?${queryString}`);
+  };
+
+
   function loaded() {
     return (
       <main>
         <h1>Fulfillment</h1>
+        <Filter
+            filterOptions={['standard', 'express', 'next day', 'pick up']}
+            filter={deliveryMethod}
+            label='Delivery Method'
+            id='deliveryMethod'
+            onFilterChange={handleFilterChange}
+          />
         <div>
           <button
             onClick={() => handleTabChange('pending')}
