@@ -1,12 +1,46 @@
+import { useAuth } from '@/app/firebase/AuthContext';
+import { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import { OrderType } from '../../types/types';
 
 interface FulFillmentProps {
   order: OrderType;
+  selectedOrders: number[];
+  setSelectedOrders: Dispatch<SetStateAction<number[]>>;
 }
 
-export default function FulfillmentItem({ order }: FulFillmentProps) {
+export default function FulfillmentItem({
+  order,
+  selectedOrders,
+  setSelectedOrders,
+}: FulFillmentProps) {
+  const { name } = useAuth();
+
+  const handleCheckboxChange = (evt: ChangeEvent<HTMLInputElement>) => {
+    const isChecked = evt.target.checked;
+
+    setSelectedOrders((prev) => {
+        if (isChecked)  return [...prev, order.id]
+        else return prev.filter((id : number) => id !== order.id);
+    });
+  }
+
   return (
     <tr>
+      <td>
+        {order.status === 'pending' && (
+          <input
+            type="checkbox"
+            checked={selectedOrders.includes(order.id)}
+            onChange={handleCheckboxChange}
+          />
+        )}
+        {order.status === 'in_progress' && (
+          <>
+            <button>undo</button>
+            <button>complete</button>
+          </>
+        )}
+      </td>
       <td>{order.id}</td>
       <td>
         <ul>
