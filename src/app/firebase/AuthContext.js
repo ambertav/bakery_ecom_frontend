@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebaseConfig';
 
+import debounce from 'lodash/debounce';
+
 const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -14,6 +16,18 @@ export const AuthContextProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [isAdmin, setIsAdmin] = useState(null);
     const [name, setName] = useState('');
+
+    const debouncedFetchUserInfo = debounce(async () => {
+        try {
+            const response = await axios.get('/user/info');
+            if (response.status === 200) {
+                setName(response.data.name);
+                setIsAdmin(response.data.isAdmin);
+            }
+        } catch (error) {
+            console.error('Error fetching user info: ', error);
+        }
+    }, 750);
 
     useEffect(() => {
         // listener for authentication changes
@@ -28,21 +42,16 @@ export const AuthContextProvider = ({ children }) => {
     useEffect(() => {
         setCurrentUser(user);
 
-        const fetchUserInfo = async () => {
-            try {
-                const response = await axios.get('/user/info');
-                if (response.status === 200) {
-                    setName(response.data.name);
-                    setIsAdmin(response.data.isAdmin);
-                }
-            } catch (error) {
-                console.error('Error fetching user info: ', error);
-            }
+        // Call the debounced function when user or isAdmin changes
+        if (user && isAdmin === null) {
+            debouncedFetchUserInfo();
         }
 
-        if (user && isAdmin === null) fetchUserInfo();
-
-    }, [user]);
+        // Cleanup function to cancel the debounce timer
+        return () => {
+            debouncedFetchUserInfo.cancel();
+        };
+    }, [user, isAdmin, debouncedFetchUserInfo]);
 
     const logout = async () => {
         try {
@@ -56,7 +65,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user: currentUser, isAdmin: isAdmin, logout: logout }}>
+        <AuthContext.Provider value={{ user: currentUser, isAdmin: isAdmin, name: name, logout: logout }}>
             {children}
         </AuthContext.Provider>
     );
