@@ -19,7 +19,7 @@ export default function Login () {
 
     return  (
         <>
-            <Access method={login} />  
+            <Access method={login} url='user/login'  resource='user'/>  
             <p>Don't have an account? 
                 <br />
                 <Link href='/signup'>Signup</Link> now

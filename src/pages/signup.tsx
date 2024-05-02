@@ -16,6 +16,6 @@ export default function Signup () {
     }
       
     return (
-        <Access method={signup} />
+        <Access method={signup} url='user/signup' resource='user' />
     );
 }
