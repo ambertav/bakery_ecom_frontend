@@ -77,7 +77,7 @@ export default function Access({ method, url, resource }: AccessProps) {
   const handleAdminSubmit = async (formInput: FormInput) => {
     setErrorMessage('');
 
-    // password match for signup
+    // form validations for each path
     if (router.pathname === '/admin/signup') {
       let message = await validateForm(formInput, [
         'password',
@@ -173,11 +173,7 @@ export default function Access({ method, url, resource }: AccessProps) {
       {resource === 'admin' && (
         <>
           <AdminAccess
-            title={router.pathname
-              .substring(1)
-              .split('/')
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ')}
+            path={router.pathname}
             errorMessage={errorMessage}
             formInput={formInput}
             handleChange={handleChange}

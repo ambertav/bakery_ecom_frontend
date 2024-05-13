@@ -3,14 +3,23 @@ import { renderInput } from '@/utilities/formUtilities';
 import { FormInput } from '../../types/types';
 
 interface UserAccessProps {
-    title : string;
+    path : string;
     errorMessage : string;
     formInput : FormInput;
     handleChange : Dispatch<ChangeEvent<HTMLInputElement>>
     handleAdminSubmit : (formInput: FormInput) => Promise<void>;
 }
 
-export default function AdminAccess ({ title, errorMessage, formInput, handleChange, handleAdminSubmit } : UserAccessProps) {
+export default function AdminAccess ({ path, errorMessage, formInput, handleChange, handleAdminSubmit } : UserAccessProps) {
+
+    // determines the title and content of the page based on the path
+    const titleMap : { [key: string]: string } = {
+        '/admin/signup': 'Admin Signup',
+        '/admin/login': 'Admin Login',
+        '/admin/update-pin': 'Admin Update Pin'
+    };
+
+    const title = titleMap[path] || '';
 
     const onSubmit = async (evt: FormEvent) => {
         evt.preventDefault();
@@ -41,7 +50,7 @@ export default function AdminAccess ({ title, errorMessage, formInput, handleCha
                         {renderInput('pin', 'Pin', 'password', formInput, handleChange)}
                     </>
                 )}
-                {title === 'Admin Update-pin' && (
+                {title === 'Admin Update Pin' && (
                     <>
                         {renderInput('email', 'Email', 'email', formInput, handleChange)}
                         {renderInput('password', 'Password', 'password', formInput, handleChange)}
