@@ -5,6 +5,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useAuth } from '@/app/firebase/AuthContext';
 import { ShoppingCart } from '../../types/types';
 
+import debounce from 'lodash/debounce';
+
 type CartContextType = {
     cart: ShoppingCart | null;
     user: User;
@@ -24,7 +26,7 @@ export const useCartContext = () => {
 }
 
 export const CartContextProvider = ({ children }: CartContextProviderProps) => {
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
     const router = useRouter();
 
     const [ cart, setCart ] = useState<ShoppingCart | null>(null);
@@ -32,7 +34,7 @@ export const CartContextProvider = ({ children }: CartContextProviderProps) => {
 
     useEffect(() => {
         const fetchShoppingCart = async () => {
-            if (user) {
+            if (user && !isAdmin) {
                 try {
                     const response = await axios.get('cart/');
                     if (response.status === 200) setCart(response.data.shopping_cart);
@@ -41,11 +43,20 @@ export const CartContextProvider = ({ children }: CartContextProviderProps) => {
                 }
             } else {
                 // get and parse cart from local storage
-                const localStorageCart : ShoppingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+                const localStorageCart = JSON.parse(localStorage.getItem('cart') || '[]');
                 setCart(localStorageCart);
             }
         }
-        fetchShoppingCart();
+
+        const debouncedFetchShoppingCart = debounce(fetchShoppingCart, 5000);
+
+        // Call the debounced function
+        debouncedFetchShoppingCart();
+
+        return () => {
+            // Cancel the debounce on component unmount
+            debouncedFetchShoppingCart.cancel();
+        };
     }, [user]);
 
     async function handleRemove (id : number) {
