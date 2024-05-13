@@ -37,7 +37,19 @@ export default function AdminAccess ({ title, errorMessage, formInput, handleCha
                     <>
                         {renderInput('email', 'Email', 'email', formInput, handleChange)}
                         {renderInput('password', 'Password', 'password', formInput, handleChange)}
+                        {renderInput('employeeId', 'Employee ID', 'text', formInput, handleChange)}
+                        {renderInput('pin', 'Pin', 'password', formInput, handleChange)}
                     </>
+                )}
+                {title === 'Admin Update-pin' && (
+                    <>
+                        {renderInput('email', 'Email', 'email', formInput, handleChange)}
+                        {renderInput('password', 'Password', 'password', formInput, handleChange)}
+                        {renderInput('employeeId', 'Employee ID', 'text', formInput, handleChange)}
+                        {renderInput('oldPin', 'Previous Pin', 'password', formInput, handleChange)}
+                        {renderInput('pin', 'New Pin', 'password', formInput, handleChange)}
+                        {renderInput('confirm_pin', 'Confirm Pin', 'password', formInput, handleChange)}
+                   </>
                 )}
                 <input type="submit" className="submit" value='Submit' />
             </form>
