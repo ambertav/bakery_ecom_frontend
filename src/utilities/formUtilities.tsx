@@ -15,7 +15,6 @@ export const renderInput = (
       >
     | Dispatch<ChangeEvent<HTMLInputElement>>
 ) => {
-    
   // creating additional attributes contingent on type of input
   let additionalAttributes: {
     [key: string]:
@@ -25,15 +24,15 @@ export const renderInput = (
 
   // number type attributes, for create product form
 
-    if (name === 'stock') {
-        additionalAttributes.min = '0';
-      // prevents user from typing in a decimal point
-      additionalAttributes.onKeyPress = (
-        evt: React.KeyboardEvent<HTMLInputElement>
-      ) => {
-        if (evt.key === '.') evt.preventDefault();
-      };
-    }
+  if (name === 'stock') {
+    additionalAttributes.min = '0';
+    // prevents user from typing in a decimal point
+    additionalAttributes.onKeyPress = (
+      evt: React.KeyboardEvent<HTMLInputElement>
+    ) => {
+      if (evt.key === '.') evt.preventDefault();
+    };
+  }
 
   if (name === 'price') {
     additionalAttributes.step = '0.01';
@@ -61,54 +60,69 @@ export const renderInput = (
   );
 };
 
+export const validateForm = async (
+  formInput: FormInput,
+  validations: string[]
+): Promise<string | null> => {
+  const { password, confirm_password, pin, confirm_pin, employer_code } =
+    formInput;
+  let validationMessage: string | undefined = undefined;
 
-export const validateForm = async (formInput: FormInput, validations: string[]): Promise<string | null> => {
-    const { password, confirm_password, pin, confirm_pin, employer_code } = formInput;
-    let validationMessage: string | undefined = undefined;
-
-    for (const validation of validations) {
-        switch (validation) {
-            case 'password':
-                validationMessage = passwordVerification(password as string, confirm_password as string);
-                break;
-            case 'pin':
-                validationMessage = pinVerification(pin as string, confirm_pin as string);
-                break;
-            case 'employerCode':
-                validationMessage = await employerCodeVerification(employer_code as string);
-                break;
-            default:
-                break;
-        }
-        
-        if (validationMessage) return validationMessage;
+  for (const validation of validations) {
+    switch (validation) {
+      case 'password':
+        validationMessage = passwordVerification(
+          password as string,
+          confirm_password as string
+        );
+        break;
+      case 'pin':
+        validationMessage = pinVerification(
+          pin as string,
+          confirm_pin as string
+        );
+        break;
+      case 'employerCode':
+        validationMessage = await employerCodeVerification(
+          employer_code as string
+        );
+        break;
+      default:
+        break;
     }
 
-    return null; // All validations passed
-}
+    if (validationMessage) return validationMessage;
+  }
 
+  return null; // All validations passed
+};
 
 // form validation helpers
-function passwordVerification (password : string, confirm: string): string | undefined {
-    if (password !== confirm) return 'Passwords do not match';
+function passwordVerification(
+  password: string,
+  confirm: string
+): string | undefined {
+  if (password !== confirm) return 'Passwords do not match';
 
-    // Return undefined when passwords match
-    return undefined;
-  }
-
-function pinVerification (pin : string, confirm : string): string | undefined {
-    if (pin !== confirm) return 'Pins do not match';
-
-    // Return undefined when pins match
-    return undefined;
-  }
-
-const employerCodeVerification = async (code : string) : Promise<string | undefined> => {
-    try {
-        const response = await axios.post('/admin/validate-code/', { code });
-        if (response.status === 200) return undefined;
-    } catch (error) {
-        console.error('Error validating employeer code');
-        return 'Invalid employer code. Cannot create admin'
-    }
+  // Return undefined when passwords match
+  return undefined;
 }
+
+function pinVerification(pin: string, confirm: string): string | undefined {
+  if (pin !== confirm) return 'Pins do not match';
+
+  // Return undefined when pins match
+  return undefined;
+}
+
+const employerCodeVerification = async (
+  code: string
+): Promise<string | undefined> => {
+  try {
+    const response = await axios.post('/admin/validate-code/', { code });
+    if (response.status === 200) return undefined;
+  } catch (error) {
+    console.error('Error validating employeer code');
+    return 'Invalid employer code. Cannot create admin';
+  }
+};
