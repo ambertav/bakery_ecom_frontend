@@ -24,6 +24,14 @@ export default function FulfillmentItem({
     });
   }
 
+  const handleUndo = async () => {
+    console.log('undo status of order: ', order.id);
+  }
+
+  const handleComplete = async () => {
+    console.log('complete status of order: ', order.id);
+  }
+
   return (
     <tr>
       <td>
@@ -34,10 +42,10 @@ export default function FulfillmentItem({
             onChange={handleCheckboxChange}
           />
         )}
-        {order.status === 'in_progress' && (
+        {order.status === 'in_progress' && order.task?.adminName === name && (
           <>
-            <button>undo</button>
-            <button>complete</button>
+            <button onClick={handleUndo}>undo</button>
+            <button onClick={handleComplete}>complete</button>
           </>
         )}
       </td>
@@ -71,6 +79,7 @@ export default function FulfillmentItem({
         )}
       </td>
       <td>{order.date}</td>
+      <td>{order.task?.assignedAt && order.task?.adminName}</td>
     </tr>
   );
 }

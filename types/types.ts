@@ -50,8 +50,17 @@ export interface OrderType {
     totalPrice: number;
     date: string;
     items?: CartItem[];
+    task?: TaskType;
     status: string;
     deliveryMethod: string;
     paymentStatus: string;
     address?: AddressType;
+}
+
+export interface TaskType {
+    id: number;
+    adminName: string | null;
+    order_id: number;
+    assignedAt: string | null;
+    completedAt: string | null;
 }

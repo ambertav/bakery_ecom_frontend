@@ -167,7 +167,9 @@ export default function Fulfillment() {
                 <th>Delivery Method</th>
                 <th>Address</th>
                 <th>Date</th>
-                <th>Assigned To</th>
+                {activeTab === 'in-progress' && (
+                    <th>Assigned To</th>
+                )}
               </tr>
             </thead>
             <tbody>
