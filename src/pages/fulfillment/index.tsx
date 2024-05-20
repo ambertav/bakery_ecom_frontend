@@ -14,8 +14,6 @@ export default function Fulfillment() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const { isAdmin } = useAuth();
-
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [deliveryMethod, setDeliveryMethod] = useState<string>(
     (params?.get('delivery-method') as string) || ''
@@ -24,6 +22,10 @@ export default function Fulfillment() {
   const [currentPage, setCurrentPage] = useState<number>(
     Number(params?.get('page')) || 1
   );
+
+  // array of order ids used to batch start orders and set them to in progress
+  const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
+
   // used to change display and to construct fetch endpoint
   const [activeTab, setActiveTab] = useState<string>('pending');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -109,6 +111,18 @@ export default function Fulfillment() {
     router.push(`fulfillment?${queryString}`);
   };
 
+  const handleStartOrders = async () => {
+    // send over array of order ids to batch send to in progress
+    try {
+        const response = await axios.put('order/fulfillment/set-in-progress/', selectedOrders);
+        if (response.status === 200) {
+            console.log('success');
+        } 
+    } catch (error) {
+        console.error('Error batch starting orders', error);
+    }
+  }
+
   function loaded() {
     return (
       <main>
@@ -124,7 +138,7 @@ export default function Fulfillment() {
           placeholder="search by order ID"
           onSearchSubmit={handleSearchSubmit}
         />
-        {params?.get('search') && (
+        {!params?.get('search') && (
           <div>
             <button
               onClick={() => handleTabChange('pending')}
@@ -140,10 +154,12 @@ export default function Fulfillment() {
             </button>
           </div>
         )}
+        {activeTab === 'pending' && (<button onClick={handleStartOrders} disabled={selectedOrders.length === 0}>Batch Start Orders</button>)}
         <div>
           <table>
             <thead>
               <tr>
+                <th>{" "}</th>
                 <th>Order ID</th>
                 <th>Items</th>
                 <th>Status</th>
@@ -151,15 +167,13 @@ export default function Fulfillment() {
                 <th>Delivery Method</th>
                 <th>Address</th>
                 <th>Date</th>
+                <th>Assigned To</th>
               </tr>
             </thead>
             <tbody>
               {orders &&
                 orders.map((o, index) => (
-                  <>
-                    <FulfillmentItem key={index} order={o} />
-                    <br />
-                  </>
+                    <FulfillmentItem key={index} order={o} selectedOrders={selectedOrders} setSelectedOrders={setSelectedOrders} />
                 ))}
             </tbody>
           </table>
