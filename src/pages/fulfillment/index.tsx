@@ -112,16 +112,41 @@ export default function Fulfillment() {
   };
 
   const handleStartOrders = async () => {
+    setIsLoading(true);
     // send over array of order ids to batch send to in progress
     try {
-        const response = await axios.put('order/fulfillment/set-in-progress/', selectedOrders);
-        if (response.status === 200) {
-            console.log('success');
-        } 
+      const response = await axios.put(
+        'order/fulfillment/set-in-progress/',
+        selectedOrders
+      );
+      if (response.status === 200) {
+        setSelectedOrders([]);
+        setActiveTab('in-progress');
+      }
     } catch (error) {
-        console.error('Error batch starting orders', error);
+      console.error('Error batch starting orders: ', error);
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     }
-  }
+  };
+
+  const handleUndoStatus = async (orderId: number) => {
+    // send over order id to undo assignment and set status to pending
+    try {
+      const response = await axios.put(
+        `order/fulfillment/${orderId}/set-pending/`
+      );
+      if (response.status === 200) {
+        console.log('success');
+      }
+    } catch (error) {
+      console.error(`Error returning order ${orderId} to pending: `, error);
+    }
+  };
+
+  const handleCompleteStatus = async (orderId: number) => {};
 
   function loaded() {
     return (
@@ -154,12 +179,19 @@ export default function Fulfillment() {
             </button>
           </div>
         )}
-        {activeTab === 'pending' && (<button onClick={handleStartOrders} disabled={selectedOrders.length === 0}>Batch Start Orders</button>)}
+        {activeTab === 'pending' && (
+          <button
+            onClick={handleStartOrders}
+            disabled={selectedOrders.length === 0}
+          >
+            Batch Start Orders
+          </button>
+        )}
         <div>
           <table>
             <thead>
               <tr>
-                <th>{" "}</th>
+                <th> </th>
                 <th>Order ID</th>
                 <th>Items</th>
                 <th>Status</th>
@@ -167,15 +199,20 @@ export default function Fulfillment() {
                 <th>Delivery Method</th>
                 <th>Address</th>
                 <th>Date</th>
-                {activeTab === 'in-progress' && (
-                    <th>Assigned To</th>
-                )}
+                {activeTab === 'in-progress' && <th>Assigned To</th>}
               </tr>
             </thead>
             <tbody>
               {orders &&
                 orders.map((o, index) => (
-                    <FulfillmentItem key={index} order={o} selectedOrders={selectedOrders} setSelectedOrders={setSelectedOrders} />
+                  <FulfillmentItem
+                    key={index}
+                    order={o}
+                    selectedOrders={selectedOrders}
+                    setSelectedOrders={setSelectedOrders}
+                    onUndo={handleUndoStatus}
+                    onComplete={handleCompleteStatus}
+                  />
                 ))}
             </tbody>
           </table>

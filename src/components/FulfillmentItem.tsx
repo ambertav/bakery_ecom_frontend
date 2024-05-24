@@ -6,12 +6,16 @@ interface FulFillmentProps {
   order: OrderType;
   selectedOrders: number[];
   setSelectedOrders: Dispatch<SetStateAction<number[]>>;
+  onUndo: (orderId : number) => void;
+  onComplete: (orderId : number) => void;
 }
 
 export default function FulfillmentItem({
   order,
   selectedOrders,
   setSelectedOrders,
+  onUndo,
+  onComplete,
 }: FulFillmentProps) {
   const { name } = useAuth();
 
@@ -25,11 +29,11 @@ export default function FulfillmentItem({
   }
 
   const handleUndo = async () => {
-    console.log('undo status of order: ', order.id);
+    onUndo(order.id);
   }
 
   const handleComplete = async () => {
-    console.log('complete status of order: ', order.id);
+    onComplete(order.id);
   }
 
   return (
