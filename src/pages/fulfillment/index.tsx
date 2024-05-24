@@ -120,7 +120,9 @@ export default function Fulfillment() {
         selectedOrders
       );
       if (response.status === 200) {
+        // clear out array
         setSelectedOrders([]);
+        // automatically navigate admin to in progress tab
         setActiveTab('in-progress');
       }
     } catch (error) {
@@ -133,20 +135,46 @@ export default function Fulfillment() {
   };
 
   const handleUndoStatus = async (orderId: number) => {
+    setIsLoading(true);
     // send over order id to undo assignment and set status to pending
     try {
       const response = await axios.put(
         `order/fulfillment/${orderId}/set-pending/`
       );
       if (response.status === 200) {
-        console.log('success');
+        // automatically navigate admin to pending tab
+        setActiveTab('pending');
       }
     } catch (error) {
-      console.error(`Error returning order ${orderId} to pending: `, error);
+      console.error(
+        `Error returning order ${orderId} to pending status: `,
+        error
+      );
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     }
   };
 
-  const handleCompleteStatus = async (orderId: number) => {};
+  const handleCompleteStatus = async (orderId: number) => {
+    setIsLoading(true);
+    // send over order id to complete
+    try {
+      const response = await axios.put(
+        `order/fulfillment/${orderId}/set-complete/`
+      );
+      if (response.status === 200) {
+        console.log('success');
+      }
+    } catch (error) {
+      console.error(`Error completing order ${orderId}: `, error);
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+    }
+  };
 
   function loaded() {
     return (
