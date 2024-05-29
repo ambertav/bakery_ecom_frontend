@@ -142,8 +142,8 @@ export default function Fulfillment() {
         `order/fulfillment/${orderId}/set-pending/`
       );
       if (response.status === 200) {
-        // automatically navigate admin to pending tab
-        setActiveTab('pending');
+        // remove order from state in lieu of full data re-fetch
+        setOrders((prev) => prev.filter(order => order.id !== orderId));
       }
     } catch (error) {
       console.error(
@@ -165,7 +165,8 @@ export default function Fulfillment() {
         `order/fulfillment/${orderId}/set-complete/`
       );
       if (response.status === 200) {
-        console.log('success');
+        // remove order from state in lieu of full data re-fetch
+        setOrders((prev) => prev.filter(order => order.id !== orderId));
       }
     } catch (error) {
       console.error(`Error completing order ${orderId}: `, error);
