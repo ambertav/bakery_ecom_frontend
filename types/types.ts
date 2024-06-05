@@ -45,6 +45,12 @@ export interface AddressType {
     default: boolean;
 }
 
+export interface CheckoutFormInput {
+    shipping: AddressType;
+    method: string;
+    billing: AddressType;
+  }
+
 export interface OrderType {
     id: number;
     totalPrice: number;
