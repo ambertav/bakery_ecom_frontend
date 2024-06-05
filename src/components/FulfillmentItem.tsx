@@ -6,8 +6,8 @@ interface FulFillmentProps {
   order: OrderType;
   selectedOrders: number[];
   setSelectedOrders: Dispatch<SetStateAction<number[]>>;
-  onUndo: (orderId : number) => void;
-  onComplete: (orderId : number) => void;
+  onUndo: (orderId: number) => void;
+  onComplete: (orderId: number) => void;
 }
 
 export default function FulfillmentItem({
@@ -23,18 +23,18 @@ export default function FulfillmentItem({
     const isChecked = evt.target.checked;
 
     setSelectedOrders((prev) => {
-        if (isChecked)  return [...prev, order.id]
-        else return prev.filter((id : number) => id !== order.id);
+      if (isChecked) return [...prev, order.id];
+      else return prev.filter((id: number) => id !== order.id);
     });
-  }
+  };
 
   const handleUndo = async () => {
     onUndo(order.id);
-  }
+  };
 
   const handleComplete = async () => {
     onComplete(order.id);
-  }
+  };
 
   return (
     <tr>
