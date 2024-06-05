@@ -42,10 +42,11 @@ export default function Checkout() {
               setExistingAddresses(response.data.addresses as AddressType[]);
               if (response.data.addresses.length !== 0) {
                 // if there is an address saved to user,
-                // use the first address, which will either be default or the first, as preselected shipping
+                // use the first address, which will either be default or the first, as preselected shipping and billing
                 setFormInput((prev) => ({
                   ...prev,
                   shipping: response.data.addresses[0],
+                  billing: response.data.addresses[0],
                 }));
               }
             }
