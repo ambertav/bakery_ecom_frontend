@@ -44,6 +44,11 @@ export const renderInput = (
     additionalAttributes.maxLength = '5';
   }
 
+  if (name === 'zip') {
+    additionalAttributes.pattern = '[0-9]{5}';
+    additionalAttributes.title = 'Enter a valid 5 digit zip code';
+  }
+
   return (
     <div key={name}>
       <label htmlFor={name}>{label}</label>
@@ -51,7 +56,7 @@ export const renderInput = (
         type={type}
         id={name}
         name={name}
-        value={formInput[name]}
+        value={formInput[name] || ''}
         onChange={handleChange}
         required={true}
         {...additionalAttributes}
@@ -83,6 +88,7 @@ export const validateForm = async (
         );
         break;
       case 'employerCode':
+        // validating code before user is created in firebase client-side and saved server-side
         validationMessage = await employerCodeVerification(
           employer_code as string
         );
@@ -94,7 +100,7 @@ export const validateForm = async (
     if (validationMessage) return validationMessage;
   }
 
-  return null; // All validations passed
+  return null; // all validations passed
 };
 
 // form validation helpers

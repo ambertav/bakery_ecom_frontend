@@ -1,105 +1,34 @@
-import { useEffect } from 'react';
-import { AddressType } from "../../types/types";
+import { useState, useEffect } from 'react';
+import { renderInput } from '@/utilities/formUtilities';
+import { FormInput } from '../../types/types';
 
-interface AddressFormProps {
-    formState: AddressType;
-    setFormState: (state : any) => void;
-}
+export default function AddressForm() {
+  const [formState, setFormState] = useState<FormInput>({});
 
-const initAddress : AddressType = {
-    id: 0,
-    firstName: '',
-    lastName: '',
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-    default: false
-}
-
-export default function AddressForm ({ formState, setFormState } : AddressFormProps) {
-
-
-    useEffect(() => {
-        function clearInput () {
-            setFormState(initAddress);
-        }
-        clearInput();
-    }, []);
-
-    function handleInputChange (evt : React.ChangeEvent<HTMLInputElement>) {
-        // updates corresponding state based on which form is being changed
-        const { name, value } = evt.target;
-        setFormState((prev  : AddressType) => ({
-            ...prev,
-            [name]: value,
-        }));
+  useEffect(() => {
+    function clearInput() {
+      setFormState({});
     }
-    
-    return (
-        <>
-            <div>
-                <label htmlFor='firstName'>First Name:</label>
-                <input
-                    type='text'
-                    id='name'
-                    name='firstName'
-                    value={formState.firstName}
-                    onChange={handleInputChange}
-                />
-                </div>
-            <div>
-                <label htmlFor='lastName'>Last Name:</label>
-                <input
-                    type='text'
-                    id='name'
-                    name='lastName'
-                    value={formState.lastName}
-                    onChange={(evt) => handleInputChange(evt)}
-                />
-            </div>
-            <div>
-                <label htmlFor='street'>Street:</label>
-                <input
-                    type='text'
-                    id='street'
-                    name='street'
-                    value={formState.street}
-                    onChange={(evt) => handleInputChange(evt)}
-                />
-            </div>
-            <div>
-                <label htmlFor='city'>City:</label>
-                <input
-                    type='text'
-                    id='city'
-                    name='city'
-                    value={formState.city}
-                    onChange={(evt) => handleInputChange(evt)}
-                />
-            </div>
-            <div>
-                <label htmlFor='state'>State:</label>
-                <input
-                    type='text'
-                    id='state'
-                    name='state'
-                    value={formState.state}
-                    onChange={(evt) => handleInputChange(evt)}
-                />
-            </div>
-            <div>
-                <label htmlFor='zip'>Zip Code:</label>
-                <input
-                    type='text'
-                    id='zip'
-                    name='zip'
-                    pattern='[0-9]{5}'
-                    title='Enter a valid 5 digit zip code'
-                    value={formState.zip}
-                    onChange={(evt) => handleInputChange(evt)}
-                />
-            </div>
-        </>
-    );
+    clearInput();
+  }, []);
+
+  function handleInputChange(evt: React.ChangeEvent<HTMLInputElement>) {
+    // updates corresponding state based on which form is being changed
+    const { name, value } = evt.target;
+    setFormState((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
+  return (
+    <>
+        {renderInput('firstName', 'First Name', 'text', formState, handleInputChange)}
+        {renderInput('lastName', 'Last Name', 'text', formState, handleInputChange)}
+        {renderInput('street', 'Street', 'text', formState, handleInputChange)}
+        {renderInput('city', 'City', 'text', formState, handleInputChange)}
+        {renderInput('state', 'State', 'text', formState, handleInputChange)}
+        {renderInput('zip', 'Zip', 'text', formState, handleInputChange)}
+    </>
+  );
 }
