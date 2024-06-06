@@ -25,11 +25,7 @@ export default function CheckoutForm({
   const [showAddBilling, setShowAddBilling] = useState<boolean>(false);
 
   // sets billing same as shipping
-  const [sameAsShipping, setSameAsShipping] = useState<boolean>(false);
-
-  // controls render of list of choices of user's existing addresses
-  const [showChoicesForBilling, setShowChoicesForBilling] =
-    useState<boolean>(false);
+  const [sameAsShipping, setSameAsShipping] = useState<boolean | null>(null);
 
   // for rendering shipping/delivery and billing sections
   const [currentSection, setCurrentSection] = useState<1 | 2>(1);
@@ -49,7 +45,9 @@ export default function CheckoutForm({
       }));
 
       // auto close the corresponding section's address form
-      role === 'shipping' ? setShowAddShipping(false) : setShowAddBilling(false)
+      role === 'shipping'
+        ? setShowAddShipping(false)
+        : setShowAddBilling(false);
 
       // if checkbox unchecked...
     } else {
@@ -68,41 +66,39 @@ export default function CheckoutForm({
     }));
   };
 
-  const handleShowForm = (evt : MouseEvent<HTMLButtonElement>, formType : 'shipping' | 'billing') => {
+  const handleShowForm = (
+    evt: MouseEvent<HTMLButtonElement>,
+    formType: 'shipping' | 'billing'
+  ) => {
     // sets show add address form for a particular section
     // clears the corresponding info from the formInput
-        // to prevent mix up from existing address info fields and from new address input fields
+    // to prevent mix up from existing address info fields and from new address input fields
 
     if (formType === 'shipping') {
-        setShowAddShipping(true);
-        setFormInput((prev) => ({
-            ...prev,
-            shipping: {} as AddressType,
-        }));
+      setShowAddShipping(true);
+      setFormInput((prev) => ({
+        ...prev,
+        shipping: {} as AddressType,
+      }));
     } else if (formType === 'billing') {
-        setShowAddBilling(true);
-        setFormInput((prev) => ({
-            ...prev,
-            billing: {} as AddressType,
-        }));
+      setShowAddBilling(true);
+      setFormInput((prev) => ({
+        ...prev,
+        billing: {} as AddressType,
+      }));
     }
-  }
+  };
 
   const handleSameAsShipping = (evt: React.ChangeEvent<HTMLInputElement>) => {
     // updates billing address with shipping address info
-    evt.preventDefault();
     if (evt.target.value === 'yes') {
       setSameAsShipping(true);
       setFormInput((prev) => ({
         ...prev,
         billing: prev?.shipping,
       }));
-      setShowChoicesForBilling(false);
       setShowAddBilling(false);
-    } else {
-      setSameAsShipping(false);
-      setShowChoicesForBilling(true);
-    }
+    } else setSameAsShipping(false);
   };
 
   const handleSubmit = async () => {
@@ -113,7 +109,7 @@ export default function CheckoutForm({
     return (
       <>
         <div>
-          <h3>Shipping Address</h3>
+          <h2>Shipping Address</h2>
           {existingAddresses.length > 0 && (
             <div>
               {existingAddresses.map((address, index) => (
@@ -149,7 +145,7 @@ export default function CheckoutForm({
           )}
         </div>
         <div>
-          <h3>Select Delivery Method</h3>
+          <h2>Select Delivery Method</h2>
           <select
             name="method"
             id="method"
@@ -171,7 +167,15 @@ export default function CheckoutForm({
     return (
       <>
         <div>
-          <h3>Billing Address</h3>
+          <div>
+            <h4>Shipping Address</h4>
+            {formInput.shipping.firstName} {formInput.shipping.lastName} <br />
+            {formInput.shipping.street} <br />
+            {formInput.shipping.city}, {formInput.shipping.state}{' '}
+            {formInput.shipping.zip}
+            <h4>{formInput.method} Delivery</h4>
+          </div>
+          <h2>Billing Address</h2>
           <p>is Billing same as shipping?</p>
           <div>
             <input
@@ -194,37 +198,39 @@ export default function CheckoutForm({
             />
             <label htmlFor="notSameAsShipping">No</label>
           </div>
-          {showChoicesForBilling && existingAddresses && (
-            <div>
-              {existingAddresses.map((address, index) => (
-                <label key={index}>
-                  <input
-                    type="checkbox"
-                    value={index}
-                    onChange={(evt) => {
-                      handleCheckbox(evt, 'billing');
-                    }}
-                    checked={formInput.billing === address}
-                  />
-                  {address.firstName} {address.lastName} <br />
-                  {address.street} <br />
-                  {address.city}, {address.state} {address.zip}
-                </label>
-              ))}
-            </div>
-          )}
-          {!showAddBilling && (
-            <button onClick={(evt) => handleShowForm(evt, 'billing')}>
-              Add new address
-            </button>
-          )}
-          {showAddBilling && (
+          {existingAddresses.length > 0 && sameAsShipping === false && (
             <>
-              <button onClick={() => setShowAddBilling(false)}>X</button>
-              <AddressForm
-                formState={formInput.billing}
-                setFormState={setFormInput}
-              />
+              <div>
+                {existingAddresses.map((address, index) => (
+                  <label key={index}>
+                    <input
+                      type="checkbox"
+                      value={index}
+                      onChange={(evt) => {
+                        handleCheckbox(evt, 'billing');
+                      }}
+                      checked={formInput.billing === address}
+                    />
+                    {address.firstName} {address.lastName} <br />
+                    {address.street} <br />
+                    {address.city}, {address.state} {address.zip}
+                  </label>
+                ))}
+              </div>
+              {!showAddBilling && (
+                <button onClick={(evt) => handleShowForm(evt, 'billing')}>
+                  Add new address
+                </button>
+              )}
+              {showAddBilling && (
+                <>
+                  <button onClick={() => setShowAddBilling(false)}>X</button>
+                  <AddressForm
+                    formState={formInput.billing}
+                    setFormState={setFormInput}
+                  />
+                </>
+              )}
             </>
           )}
         </div>
