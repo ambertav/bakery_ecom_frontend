@@ -1,4 +1,4 @@
-import { useState, Dispatch, ChangeEvent } from 'react';
+import { useState, Dispatch, ChangeEvent, MouseEvent } from 'react';
 import AddressForm from './AddressForm';
 
 import { CheckoutFormInput, AddressType } from '../../types/types';
@@ -48,6 +48,9 @@ export default function CheckoutForm({
         [role]: existingAddresses[parseInt(evt.target.value)],
       }));
 
+      // auto close the corresponding section's address form
+      role === 'shipping' ? setShowAddShipping(false) : setShowAddBilling(false)
+
       // if checkbox unchecked...
     } else {
       // clear formInput by setting corresponding address to empty object
@@ -64,6 +67,26 @@ export default function CheckoutForm({
       method: evt.target.value,
     }));
   };
+
+  const handleShowForm = (evt : MouseEvent<HTMLButtonElement>, formType : 'shipping' | 'billing') => {
+    // sets show add address form for a particular section
+    // clears the corresponding info from the formInput
+        // to prevent mix up from existing address info fields and from new address input fields
+
+    if (formType === 'shipping') {
+        setShowAddShipping(true);
+        setFormInput((prev) => ({
+            ...prev,
+            shipping: {} as AddressType,
+        }));
+    } else if (formType === 'billing') {
+        setShowAddBilling(true);
+        setFormInput((prev) => ({
+            ...prev,
+            billing: {} as AddressType,
+        }));
+    }
+  }
 
   const handleSameAsShipping = (evt: React.ChangeEvent<HTMLInputElement>) => {
     // updates billing address with shipping address info
@@ -90,7 +113,7 @@ export default function CheckoutForm({
     return (
       <>
         <div>
-          <h3>Delivery Address</h3>
+          <h3>Shipping Address</h3>
           {existingAddresses.length > 0 && (
             <div>
               {existingAddresses.map((address, index) => (
@@ -110,21 +133,19 @@ export default function CheckoutForm({
               ))}
             </div>
           )}
-          <button
-            onClick={(evt) => {
-              evt.preventDefault();
-              setShowAddShipping((prev) => !prev);
-            }}
-          >
-            {showAddShipping ? 'Remove' : 'Add new shipping'}
-          </button>
-          {showAddShipping ? (
-            <AddressForm
-              formState={formInput.shipping}
-              setFormState={setFormInput}
-            />
-          ) : (
-            ''
+          {!showAddShipping && (
+            <button onClick={(evt) => handleShowForm(evt, 'shipping')}>
+              Add new address
+            </button>
+          )}
+          {showAddShipping && (
+            <>
+              <button onClick={() => setShowAddShipping(false)}>X</button>
+              <AddressForm
+                formState={formInput.shipping}
+                setFormState={setFormInput}
+              />
+            </>
           )}
         </div>
         <div>
@@ -173,7 +194,7 @@ export default function CheckoutForm({
             />
             <label htmlFor="notSameAsShipping">No</label>
           </div>
-          {showChoicesForBilling && existingAddresses ? (
+          {showChoicesForBilling && existingAddresses && (
             <div>
               {existingAddresses.map((address, index) => (
                 <label key={index}>
@@ -191,24 +212,20 @@ export default function CheckoutForm({
                 </label>
               ))}
             </div>
-          ) : (
-            ''
           )}
-          <button
-            onClick={(evt) => {
-              evt.preventDefault();
-              setShowAddBilling((prev) => !prev);
-            }}
-          >
-            {showAddBilling ? 'Remove' : 'Add new billing'}
-          </button>
-          {showAddBilling ? (
-            <AddressForm
-              formState={formInput.billing}
-              setFormState={setFormInput}
-            />
-          ) : (
-            ''
+          {!showAddBilling && (
+            <button onClick={(evt) => handleShowForm(evt, 'billing')}>
+              Add new address
+            </button>
+          )}
+          {showAddBilling && (
+            <>
+              <button onClick={() => setShowAddBilling(false)}>X</button>
+              <AddressForm
+                formState={formInput.billing}
+                setFormState={setFormInput}
+              />
+            </>
           )}
         </div>
         <button onClick={() => setCurrentSection(1)}>Previous</button>
