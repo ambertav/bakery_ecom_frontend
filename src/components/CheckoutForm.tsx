@@ -32,7 +32,7 @@ export default function CheckoutForm({
 
   const handleCheckbox = (
     evt: ChangeEvent<HTMLInputElement>,
-    role: 'shipping' | 'billing'
+    section: 'shipping' | 'billing'
   ) => {
     // role -> enum of string options indicating type of address
 
@@ -41,11 +41,11 @@ export default function CheckoutForm({
       // update formInput by using string value of role to determine which address to update
       setFormInput((prev) => ({
         ...prev,
-        [role]: existingAddresses[parseInt(evt.target.value)],
+        [section]: existingAddresses[parseInt(evt.target.value)],
       }));
 
       // auto close the corresponding section's address form
-      role === 'shipping'
+      section === 'shipping'
         ? setShowAddShipping(false)
         : setShowAddBilling(false);
 
@@ -54,7 +54,7 @@ export default function CheckoutForm({
       // clear formInput by setting corresponding address to empty object
       setFormInput((prev) => ({
         ...prev,
-        [role]: {} as AddressType,
+        [section]: {} as AddressType,
       }));
     }
   };
@@ -66,7 +66,7 @@ export default function CheckoutForm({
     }));
   };
 
-  const handleShowForm = (
+  const handleShowAndCloseForm = (
     evt: MouseEvent<HTMLButtonElement>,
     formType: 'shipping' | 'billing'
   ) => {
@@ -75,13 +75,13 @@ export default function CheckoutForm({
     // to prevent mix up from existing address info fields and from new address input fields
 
     if (formType === 'shipping') {
-      setShowAddShipping(true);
+      setShowAddShipping((prev) => !prev);
       setFormInput((prev) => ({
         ...prev,
         shipping: {} as AddressType,
       }));
     } else if (formType === 'billing') {
-      setShowAddBilling(true);
+      setShowAddBilling((prev) => !prev);
       setFormInput((prev) => ({
         ...prev,
         billing: {} as AddressType,
@@ -100,6 +100,18 @@ export default function CheckoutForm({
       setShowAddBilling(false);
     } else setSameAsShipping(false);
   };
+
+  const handleAddressInput = (section : 'shipping' | 'billing', field : string, value : string) => {
+    setFormInput((prev) => ({
+        ...prev,
+        [section]: {
+            ...prev[section],
+            [field]: value
+        }
+      }));
+
+      console.log(formInput);
+  }
 
   const handleSubmit = async () => {
     onSubmit();
@@ -130,17 +142,18 @@ export default function CheckoutForm({
             </div>
           )}
           {!showAddShipping && (
-            <button onClick={(evt) => handleShowForm(evt, 'shipping')}>
+            <button onClick={(evt) => handleShowAndCloseForm(evt, 'shipping')}>
               Add new address
             </button>
           )}
           {showAddShipping && (
             <>
-              <button onClick={() => setShowAddShipping(false)}>X</button>
-              <AddressForm
-                formState={formInput.shipping}
-                setFormState={setFormInput}
-              />
+              <button
+                onClick={(evt) => handleShowAndCloseForm(evt, 'shipping')}
+              >
+                X
+              </button>
+              <AddressForm inputtedAddress={formInput.shipping} section='shipping' onChange={handleAddressInput} />
             </>
           )}
         </div>
@@ -198,37 +211,44 @@ export default function CheckoutForm({
             />
             <label htmlFor="notSameAsShipping">No</label>
           </div>
+
           {existingAddresses.length > 0 && sameAsShipping === false && (
             <>
               <div>
-                {existingAddresses.map((address, index) => (
-                  <label key={index}>
-                    <input
-                      type="checkbox"
-                      value={index}
-                      onChange={(evt) => {
-                        handleCheckbox(evt, 'billing');
-                      }}
-                      checked={formInput.billing === address}
-                    />
-                    {address.firstName} {address.lastName} <br />
-                    {address.street} <br />
-                    {address.city}, {address.state} {address.zip}
-                  </label>
-                ))}
+                {existingAddresses
+                  // filter out the selected shipping address
+                  .filter((address) => address !== formInput.shipping)
+                  .map((address, index) => (
+                    <label key={index}>
+                      <input
+                        type="checkbox"
+                        value={index}
+                        onChange={(evt) => {
+                          handleCheckbox(evt, 'billing');
+                        }}
+                        checked={formInput.billing === address}
+                      />
+                      {address.firstName} {address.lastName} <br />
+                      {address.street} <br />
+                      {address.city}, {address.state} {address.zip}
+                    </label>
+                  ))}
               </div>
               {!showAddBilling && (
-                <button onClick={(evt) => handleShowForm(evt, 'billing')}>
+                <button
+                  onClick={(evt) => handleShowAndCloseForm(evt, 'billing')}
+                >
                   Add new address
                 </button>
               )}
               {showAddBilling && (
                 <>
-                  <button onClick={() => setShowAddBilling(false)}>X</button>
-                  <AddressForm
-                    formState={formInput.billing}
-                    setFormState={setFormInput}
-                  />
+                  <button
+                    onClick={(evt) => handleShowAndCloseForm(evt, 'billing')}
+                  >
+                    X
+                  </button>
+                  <AddressForm inputtedAddress={formInput.billing} section='billing' onChange={handleAddressInput} />
                 </>
               )}
             </>
