@@ -56,7 +56,7 @@ export const renderInput = (
         type={type}
         id={name}
         name={name}
-        value={formInput[name] || ''}
+        value={formInput[name] as string | number || ''}
         onChange={handleChange}
         required={true}
         {...additionalAttributes}

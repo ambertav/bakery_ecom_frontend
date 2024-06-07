@@ -1,5 +1,5 @@
 export interface FormInput {
-    [fieldName: string]: string | number;
+    [fieldName: string]: string | number | boolean;
 }
 
 export interface ErrorResponse {
