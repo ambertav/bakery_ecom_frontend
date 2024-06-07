@@ -1,7 +1,7 @@
 import { useState, Dispatch, ChangeEvent, MouseEvent } from 'react';
 import AddressForm from './AddressForm';
 
-import { CheckoutFormInput, AddressType } from '../../types/types';
+import { CheckoutFormInput, AddressType, FormInput } from '../../types/types';
 
 interface CheckoutFormProps {
   formInput: CheckoutFormInput;
@@ -71,8 +71,8 @@ export default function CheckoutForm({
     formType: 'shipping' | 'billing'
   ) => {
     // sets show add address form for a particular section
-    // clears the corresponding info from the formInput
-    // to prevent mix up from existing address info fields and from new address input fields
+      // clears the corresponding info from the formInput
+      // to prevent mix up from existing address info fields and from new address input fields
 
     if (formType === 'shipping') {
       setShowAddShipping((prev) => !prev);
@@ -101,16 +101,13 @@ export default function CheckoutForm({
     } else setSameAsShipping(false);
   };
 
-  const handleAddressInput = (section : 'shipping' | 'billing', field : string, value : string) => {
+  const handleAddressInput = (section : 'shipping' | 'billing', addressFormState : FormInput) => {
     setFormInput((prev) => ({
         ...prev,
         [section]: {
-            ...prev[section],
-            [field]: value
+            ...addressFormState
         }
       }));
-
-      console.log(formInput);
   }
 
   const handleSubmit = async () => {
@@ -171,7 +168,7 @@ export default function CheckoutForm({
             <option value="NEXT_DAY">Next Day</option>
           </select>
         </div>
-        <button onClick={() => setCurrentSection(2)}>Next</button>
+        <button onClick={() => {setCurrentSection(2); console.log(formInput);}}>Next</button>
       </>
     );
   };
