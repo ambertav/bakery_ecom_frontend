@@ -1,4 +1,4 @@
-import { useState, Dispatch, ChangeEvent, MouseEvent } from 'react';
+import { useState, Dispatch, ChangeEvent, MouseEvent, FormEvent } from 'react';
 import AddressForm from './AddressForm';
 import { isEqual } from 'lodash';
 
@@ -140,7 +140,8 @@ export default function CheckoutForm({
     return true;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (evt : FormEvent<HTMLFormElement>) => {
+    evt.preventDefault();
     onSubmit();
   };
 
