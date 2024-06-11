@@ -46,7 +46,6 @@ export default function Checkout() {
                 setFormInput((prev) => ({
                   ...prev,
                   shipping: response.data.addresses[0],
-                  billing: response.data.addresses[0],
                 }));
               }
             }
