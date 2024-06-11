@@ -1,6 +1,6 @@
 import axios from './axiosConfig';
 import { ChangeEvent, Dispatch } from 'react';
-import { FormInput } from '../../types/types';
+import { AddressType, FormInput } from '../../types/types';
 
 export const renderInput = (
   name: string,
@@ -56,7 +56,7 @@ export const renderInput = (
         type={type}
         id={name}
         name={name}
-        value={formInput[name] as string | number || ''}
+        value={(formInput[name] as string | number) || ''}
         onChange={handleChange}
         required={true}
         {...additionalAttributes}
@@ -110,14 +110,14 @@ function passwordVerification(
 ): string | undefined {
   if (password !== confirm) return 'Passwords do not match';
 
-  // Return undefined when passwords match
+  // return undefined when passwords match
   return undefined;
 }
 
 function pinVerification(pin: string, confirm: string): string | undefined {
   if (pin !== confirm) return 'Pins do not match';
 
-  // Return undefined when pins match
+  // return undefined when pins match
   return undefined;
 }
 
@@ -131,4 +131,17 @@ const employerCodeVerification = async (
     console.error('Error validating employeer code');
     return 'Invalid employer code. Cannot create admin';
   }
+};
+
+export const addressValidation = (address: AddressType): boolean => {
+  // if all fields are filled out, returns true
+  // if all or some fields are not filled out / missing, returns false
+  return !!(
+    address.firstName &&
+    address.lastName &&
+    address.street &&
+    address.city &&
+    address.state &&
+    address.zip
+  );
 };
