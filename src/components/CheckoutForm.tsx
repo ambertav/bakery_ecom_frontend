@@ -1,6 +1,8 @@
 import { useState, Dispatch, ChangeEvent, MouseEvent } from 'react';
 import AddressForm from './AddressForm';
+import { isEqual } from 'lodash';
 
+import { addressValidation } from '../utilities/formUtilities';
 import { CheckoutFormInput, AddressType, FormInput } from '../../types/types';
 
 interface CheckoutFormProps {
@@ -98,17 +100,45 @@ export default function CheckoutForm({
         billing: prev?.shipping,
       }));
       setShowAddBilling(false);
-    } else setSameAsShipping(false);
+    } else {
+      setSameAsShipping(false);
+      setFormInput((prev) => ({
+        ...prev,
+        billing: {} as AddressType,
+      }));
+    }
   };
 
-  const handleAddressInput = (section : 'shipping' | 'billing', addressFormState : FormInput) => {
+  const handleAddressInput = (
+    section: 'shipping' | 'billing',
+    addressFormState: FormInput
+  ) => {
     setFormInput((prev) => ({
-        ...prev,
-        [section]: {
-            ...addressFormState
-        }
-      }));
-  }
+      ...prev,
+      [section]: {
+        ...addressFormState,
+      },
+    }));
+  };
+
+  const disableNext = (currentSection: number): boolean => {
+    // used to determine if next or continue to payment functions are disabled
+      // needs to return false to be enabled
+      // by default is disabled
+
+    // in shipping section:
+      // enables if method and shipping address passes validation
+    if (currentSection === 1) {
+      if (formInput.method !== '' && addressValidation(formInput.shipping))
+        return false;
+    }
+    // in billing section:
+      // enables if billing address passes validation
+    else if (currentSection === 2)
+      if (addressValidation(formInput.billing)) return false;
+
+    return true;
+  };
 
   const handleSubmit = async () => {
     onSubmit();
@@ -129,7 +159,7 @@ export default function CheckoutForm({
                     onChange={(evt) => {
                       handleCheckbox(evt, 'shipping');
                     }}
-                    checked={formInput.shipping === address}
+                    checked={isEqual(address, formInput.shipping)}
                   />
                   {address.firstName} {address.lastName} <br />
                   {address.street} <br />
@@ -150,7 +180,11 @@ export default function CheckoutForm({
               >
                 X
               </button>
-              <AddressForm inputtedAddress={formInput.shipping} section='shipping' onChange={handleAddressInput} />
+              <AddressForm
+                inputtedAddress={formInput.shipping}
+                section="shipping"
+                onChange={handleAddressInput}
+              />
             </>
           )}
         </div>
@@ -168,7 +202,14 @@ export default function CheckoutForm({
             <option value="NEXT_DAY">Next Day</option>
           </select>
         </div>
-        <button onClick={() => {setCurrentSection(2); console.log(formInput);}}>Next</button>
+        <button
+          disabled={disableNext(currentSection)}
+          onClick={() => {
+            setCurrentSection(2);
+          }}
+        >
+          Next
+        </button>
       </>
     );
   };
@@ -214,7 +255,7 @@ export default function CheckoutForm({
               <div>
                 {existingAddresses
                   // filter out the selected shipping address
-                  .filter((address) => address !== formInput.shipping)
+                  .filter((address) => !isEqual(address, formInput.shipping))
                   .map((address, index) => (
                     <label key={index}>
                       <input
@@ -223,7 +264,7 @@ export default function CheckoutForm({
                         onChange={(evt) => {
                           handleCheckbox(evt, 'billing');
                         }}
-                        checked={formInput.billing === address}
+                        checked={isEqual(address, formInput.billing)}
                       />
                       {address.firstName} {address.lastName} <br />
                       {address.street} <br />
@@ -245,7 +286,11 @@ export default function CheckoutForm({
                   >
                     X
                   </button>
-                  <AddressForm inputtedAddress={formInput.billing} section='billing' onChange={handleAddressInput} />
+                  <AddressForm
+                    inputtedAddress={formInput.billing}
+                    section="billing"
+                    onChange={handleAddressInput}
+                  />
                 </>
               )}
             </>
@@ -253,6 +298,7 @@ export default function CheckoutForm({
         </div>
         <button onClick={() => setCurrentSection(1)}>Previous</button>
         <input
+          disabled={disableNext(currentSection)}
           type="submit"
           value={isProcessing ? 'Processing...' : 'Continue to Payment'}
         />
