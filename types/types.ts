@@ -35,14 +35,14 @@ export interface CartItem {
 export interface ShoppingCart extends Array<CartItem> {}
 
 export interface AddressType {
-    id: number;
+    id?: number;
     firstName: string;
     lastName: string;
     street: string;
     city: string;
     state: string;
     zip: string;
-    default: boolean;
+    default?: boolean;
 }
 
 export interface CheckoutFormInput {
@@ -55,7 +55,7 @@ export interface OrderType {
     id: number;
     totalPrice: number;
     date: string;
-    items?: CartItem[];
+    cartItems?: CartItem[];
     task?: TaskType;
     status: string;
     deliveryMethod: string;
