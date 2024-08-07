@@ -8,7 +8,6 @@ export default function ProductCreate() {
         description: '',
         category: '',
         price: 1,
-        stock: 1,
     });
 
     const [displayFile, setDisplayFile] = useState<string>('');

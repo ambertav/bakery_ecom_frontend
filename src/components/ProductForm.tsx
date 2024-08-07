@@ -187,7 +187,6 @@ export default function ProductForm({
             </select>
           </div>
           {renderInput('price', 'Price', 'number', formInput, handleChange)}
-          {renderInput('stock', 'Stock', 'number', formInput, handleChange)}
           <input type="submit" />
         </form>
       </>

@@ -13,7 +13,6 @@ export interface ProductType {
     category: string;
     image: string;
     price: number;
-    stock: number;
 }
 
 export interface ProductProps {
