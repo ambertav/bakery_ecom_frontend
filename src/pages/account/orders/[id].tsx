@@ -44,7 +44,7 @@ export default function OrderDetail() {
               totalPrice,
             });
             setAddress(response.data.order.address);
-            setItems(response.data.order.items);
+            setItems(response.data.order.cartItems);
           }
         } catch (error) {
           console.error('Error fetching order history: ', error);

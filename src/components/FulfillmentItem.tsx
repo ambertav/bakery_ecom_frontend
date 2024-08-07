@@ -56,7 +56,7 @@ export default function FulfillmentItem({
       <td>{order.id}</td>
       <td>
         <ul>
-          {order.items!.map((i, index) => (
+          {order.cartItems!.map((i, index) => (
             <li key={index}>
               <p>{i.productId}</p>
               <p>{i.name}</p>
