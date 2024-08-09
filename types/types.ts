@@ -12,7 +12,15 @@ export interface ProductType {
     description: string;
     category: string;
     image: string;
+    portions: PortionType[];
+}
+
+export interface PortionType {
+    id: number;
+    size: string;
+    stock: number;
     price: number;
+    soldOut: boolean;
 }
 
 export interface ProductProps {
@@ -22,11 +30,17 @@ export interface ProductProps {
 
 export interface CartItem {
     id: number;
-    productId: number;
-    name: string;
-    image: string;
+    product: {
+        id: number;
+        name: string;
+        image: string;
+    };
     price: number;
-    portion: string;
+    portion: {
+        id: number;
+        size: string;
+        price: number;
+    }
     quantity: number;
     orderId: number | null;
 }
