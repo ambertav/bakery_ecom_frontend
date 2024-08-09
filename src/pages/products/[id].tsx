@@ -72,7 +72,7 @@ export default function ProductShow() {
     const data = {
       id: product!.id,
       qty: Number(formState.qty),
-      portion: formState.portion,
+      portion: product!.portions.find(p => p.size === formState.portion.toLowerCase())?.id
     };
 
     if (user) {
@@ -100,18 +100,24 @@ export default function ProductShow() {
 
       const newItem: CartItem = {
         id,
-        productId: data.id,
-        name: product!.name,
-        image: product!.image,
-        price: product!.price,
+        product: {
+            id: data.id,
+            name: product!.name,
+            image: product!.name,
+        },
+        price: (product!.portions.find(p => p.id === data.portion)?.price || 0) * data.qty,
+        portion: {
+            id: data.portion!,
+            size: formState.portion,
+            price: product!.portions.find(p => p.id === data.portion)?.price!
+        },
         quantity: data.qty,
-        portion: data.portion,
         orderId: null,
       };
 
       // checks if product is already in cart
       const existingIndex = localStorageCart.findIndex(
-        (item) => item.productId === newItem.productId
+        (item) => item.product.id === newItem.product.id
       );
 
       if (existingIndex !== -1)
@@ -158,7 +164,7 @@ export default function ProductShow() {
                       min={1}
                       onChange={handleChange}
                     />
-                    <input type="submit" value="Add to Cart" />
+                    <input type="submit" value="Add to Cart" disabled={product!.portions.find(p => p.size === formState.portion.toLowerCase())?.soldOut || formState.portion === ''} />
                   </form>
                 </>
               )}
