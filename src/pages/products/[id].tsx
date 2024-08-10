@@ -15,20 +15,21 @@ export default function ProductShow() {
   const [validPortions, setValidPortions] = useState<string[]>([]);
   const [formState, setFormState] = useState({
     qty: 1,
-    portion: ''
+    portion: '',
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { id } = router.query;
 
-  const constructPortionArray = (category : string) : string[] => {
-    let portions : string[] = ['whole'];
+  const constructPortionArray = (category: string): string[] => {
+    let portions: string[] = ['whole'];
 
     if (category === 'cupcake' || category === 'donut') portions.push('mini');
-    else if (category === 'cake' || category === 'pie') portions.push('mini', 'slice');
+    else if (category === 'cake' || category === 'pie')
+      portions.push('mini', 'slice');
 
     return portions;
-  }
+  };
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -37,8 +38,10 @@ export default function ProductShow() {
       try {
         const response = await axios.get(`product/${id}`);
         if (response.status === 200) {
-            setProduct(response.data.product);
-            setValidPortions(constructPortionArray(response.data.product.category));
+          setProduct(response.data.product);
+          setValidPortions(
+            constructPortionArray(response.data.product.category)
+          );
         }
       } catch (error) {
         console.error('Error fetching product: ', error);
@@ -53,26 +56,30 @@ export default function ProductShow() {
     return () => clearTimeout(timeout);
   }, []);
 
-  const handleChange = (evt : ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>) => {
+  const handleChange = (
+    evt: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
+  ) => {
     let { name, value } = evt.target;
 
     setFormState((prev: any) => ({
-        ...prev,
-        [name]: value,
-      }));
-  }
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const generateUniqueId = () => {
     const now = new Date();
     return now.getTime() + now.getMilliseconds(); // gets timestamp id
-  }
+  };
 
   const handleAddToCart = async (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
     const data = {
       id: product!.id,
       qty: Number(formState.qty),
-      portion: product!.portions.find(p => p.size === formState.portion.toLowerCase())?.id
+      portion: product!.portions.find(
+        (p) => p.size === formState.portion.toLowerCase()
+      )?.id,
     };
 
     if (user) {
@@ -101,15 +108,17 @@ export default function ProductShow() {
       const newItem: CartItem = {
         id,
         product: {
-            id: data.id,
-            name: product!.name,
-            image: product!.name,
+          id: data.id,
+          name: product!.name,
+          image: product!.name,
         },
-        price: (product!.portions.find(p => p.id === data.portion)?.price || 0) * data.qty,
+        price:
+          (product!.portions.find((p) => p.id === data.portion)?.price || 0) *
+          data.qty,
         portion: {
-            id: data.portion!,
-            size: formState.portion,
-            price: product!.portions.find(p => p.id === data.portion)?.price!
+          id: data.portion!,
+          size: formState.portion,
+          price: product!.portions.find((p) => p.id === data.portion)?.price!,
         },
         quantity: data.qty,
         orderId: null,
@@ -117,18 +126,22 @@ export default function ProductShow() {
 
       // checks if product is already in cart
       const existingIndex = localStorageCart.findIndex(
-        (item) => item.product.id === newItem.product.id
+        (item) =>
+          item.product.id === newItem.product.id &&
+          item.portion.id === newItem.portion.id
       );
 
-      if (existingIndex !== -1)
-        localStorageCart[existingIndex].quantity +=
-          data.qty; // if found, update quantity
-      else localStorageCart.push(newItem); // else add to local storage
+      if (existingIndex !== -1) {
+        // if found, update quantity and price of cart item
+        const foundItem = localStorageCart[existingIndex];
+        foundItem.quantity += data.qty;
+        foundItem.price = foundItem.portion.price * foundItem.quantity;
+      } else localStorageCart.push(newItem); // else add to local storage
 
       localStorage.setItem('cart', JSON.stringify(localStorageCart));
       console.log('Local storage success');
     }
-  }
+  };
 
   function loaded() {
     return (
@@ -145,16 +158,19 @@ export default function ProductShow() {
                     }}
                   >
                     <select
-                        id="portion"
-                        name="portion"
-                        value={formState.portion}
-                        onChange={handleChange}
-                        required={true}
+                      id="portion"
+                      name="portion"
+                      value={formState.portion}
+                      onChange={handleChange}
+                      required={true}
                     >
-                        <option value=''>Select a portion size</option>
-                        {validPortions && validPortions.map((p, index) => 
-                        <option key={index} value={p.toUpperCase()}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
-                        )}
+                      <option value="">Select a portion size</option>
+                      {validPortions &&
+                        validPortions.map((p, index) => (
+                          <option key={index} value={p.toUpperCase()}>
+                            {p.charAt(0).toUpperCase() + p.slice(1)}
+                          </option>
+                        ))}
                     </select>
                     <input
                       type="number"
@@ -164,7 +180,15 @@ export default function ProductShow() {
                       min={1}
                       onChange={handleChange}
                     />
-                    <input type="submit" value="Add to Cart" disabled={product!.portions.find(p => p.size === formState.portion.toLowerCase())?.soldOut || formState.portion === ''} />
+                    <input
+                      type="submit"
+                      value="Add to Cart"
+                      disabled={
+                        product!.portions.find(
+                          (p) => p.size === formState.portion.toLowerCase()
+                        )?.soldOut || formState.portion === ''
+                      }
+                    />
                   </form>
                 </>
               )}
