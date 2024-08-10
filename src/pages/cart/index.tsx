@@ -33,7 +33,7 @@ export default function Cart() {
               {cart !== null ? (
                 cart.map((c, key) => {
                   // add up total price, accounting for multiple quantities
-                  total += Number(c.price) * c.quantity;
+                  total += Number(c.price);
                   // render cart information
                   return (
                     <li key={key}>

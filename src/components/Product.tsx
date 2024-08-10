@@ -2,25 +2,30 @@ import Link from 'next/link';
 import { ProductProps } from '../../types/types';
 
 
-export default function Product (props: ProductProps) {
+export default function Product ({ product, page } : ProductProps) {
+    const soldOut = product.portions.every((portion) => portion.soldOut);
 
     return (
         <>
-            {props.page === 'index' && (
+            {page === 'index' && (
                 <li>
-                    <Link href={`/products/${props.product.id}`}>
-                            <p>{props.product.name}</p>
-                            <img src={props.product.image} alt={props.product.name} />
-                            <p>{props.product.price}</p>
+                    <Link href={`/products/${product.id}`}>
+                            <p>{product.name}</p>
+                            <img src={product.image} alt={product.name} />
+                            {soldOut && (
+                                <p>Sold out! Come back again tomorrow</p>
+                            )}
                     </Link>
                 </li>
             )}
-            {props.page === 'show' && (
+            {page === 'show' && (
                 <li>
-                    <p>{props.product.name}</p>
-                    <img src={props.product.image} alt={props.product.name} />
-                    <p>{props.product.description}</p>
-                    <p>{props.product.price}</p>
+                    <p>{product.name}</p>
+                    <img src={product.image} alt={product.name} />
+                    <p>{product.description}</p>
+                    {soldOut && (
+                        <p>Sold out! Come back again tomorrow</p>
+                    )}
                 </li>
             )}
         </>
