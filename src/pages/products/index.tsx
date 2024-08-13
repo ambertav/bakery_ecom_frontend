@@ -24,7 +24,6 @@ export default function ProductIndex() {
   );
   const [sort, setSort] = useState<string>('recommended');
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [updatedProducts, setUpdatedProducts] = useState<FormInput>({});
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -136,29 +135,6 @@ export default function ProductIndex() {
     setIsLoading(true);
 
     router.push(`products?${queryString}`);
-  };
-
-  const handleInventorySubmit = async (evt: MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault();
-    // if the updatedProducts state is empty, return
-    if (Object.keys(updatedProducts).length === 0) return;
-
-    try {
-      const response = await axios.put(
-        '/product/inventory/update',
-        updatedProducts,
-        {
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-
-      if (response.status === 200) {
-        setIsLoading(true);
-        router.push('/products');
-      }
-    } catch (error) {
-      console.error('Error updating inventory: ', error);
-    }
   };
 
   function loaded() {
