@@ -1,6 +1,5 @@
 import axios from '../../utilities/axiosConfig';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '../../app/firebase/AuthContext';
 import { useState, useEffect, MouseEvent } from 'react';
 import { FormInput, ProductType } from '../../../types/types';
 
@@ -10,13 +9,10 @@ import Sort from '@/components/Sort';
 import Search from '@/components/Search';
 import Pagination from '@/components/Pagination';
 import Product from '@/components/Product';
-import Inventory from '@/components/Inventory';
 
 export default function ProductIndex() {
   const router = useRouter();
   const params = useSearchParams();
-
-  const { isAdmin } = useAuth();
 
   const [products, setProducts] = useState<ProductType[]>([]);
   const [totalPages, setTotalPages] = useState<number | null>(null);
@@ -204,27 +200,11 @@ export default function ProductIndex() {
         <div>
           <ul>
             {products && products.length > 0 ? (
-              isAdmin ? (
-                <>
-                  <button onClick={handleInventorySubmit}>
-                    Update Inventory
-                  </button>
-                  {products.map((p, index) => (
-                    <div key={index}>
-                      <Inventory
-                        product={p}
-                        setUpdatedProducts={setUpdatedProducts}
-                      />
-                    </div>
-                  ))}
-                </>
-              ) : (
-                products.map((p, index) => (
-                  <div key={index}>
-                    <Product product={p} page="index" />
-                  </div>
-                ))
-              )
+              products.map((p, index) => (
+                <div key={index}>
+                  <Product product={p} page="index" />
+                </div>
+              ))
             ) : (
               <div>No products</div>
             )}
