@@ -21,6 +21,9 @@ export default function Inventory() {
   const [category, setCategory] = useState<string>(
     (params?.get('category') as string) || ''
   );
+  const [getReport, setGetReport] = useState<boolean>(
+    params?.get('generate-report') === 'true'
+  );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [updatedPortions, setUpdatedPortions] = useState<UpdatedPortionsState>(
     {}
@@ -61,10 +64,29 @@ export default function Inventory() {
       }
     };
 
-    fetchProducts();
+    const fetchReport = async () => {
+      try {
+        const response = await axios.get('product/inventory/generate-report');
+        if (response.status === 200) {
+          setProducts(response.data.products);
+          // responds with structure to update inventory to reduce duplicate processing
+          setUpdatedPortions(response.data.updatedPortionsState);
+          setTotalPages(1);
+          setCurrentPage(1);
+        }
+      } catch (error) {
+        console.error('Error fetching products: ', error);
+      } finally {
+        timeout = setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+      }
+    };
+
+    getReport ? fetchReport() : fetchProducts();
 
     return () => clearTimeout(timeout);
-  }, [params?.getAll, currentPage, category]);
+  }, [params?.getAll, currentPage, category, getReport]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -101,13 +123,20 @@ export default function Inventory() {
     setCurrentPage(1);
     setIsLoading(true);
 
-    router.push(`inventory?${queryString}`);
+    let url = `inventory?${queryString}`;
+
+    // Remove 'generate-report' if it is not included in the query string
+    if (!queryString.includes('generate-report')) {
+      url = url
+        .replace(/([?&])generate-report=true/, '$1')
+        .replace(/([?&])$/, '');
+    }
+
+    router.push(url);
   };
 
   const handleInventorySubmit = async (evt: MouseEvent<HTMLButtonElement>) => {
     evt.preventDefault();
-
-    console.dir(updatedPortions, { depth: null });
 
     // if the updatedPortions state is empty, return
     if (Object.keys(updatedPortions).length === 0) return;
@@ -130,32 +159,55 @@ export default function Inventory() {
     }
   };
 
+  const handleGenerateReport = async (evt: MouseEvent<HTMLButtonElement>) => {
+    evt.preventDefault();
+    setGetReport(true);
+    router.push('/inventory?generate-report=true');
+  };
+
   function loaded() {
     return (
       <main>
         <h1>Inventory</h1>
         <div>
-          <Filter
-            filterOptions={[
-              'cake',
-              'cupcake',
-              'pie',
-              'cookie',
-              'donut',
-              'pastry',
-            ]}
-            filter={category}
-            label="Category"
-            id="category"
-            onFilterChange={handleFilterChange}
-          />
+          {params?.get('generate-report') !== 'true' && (
+            <>
+              <Filter
+                filterOptions={[
+                  'cake',
+                  'cupcake',
+                  'pie',
+                  'cookie',
+                  'donut',
+                  'pastry',
+                ]}
+                filter={category}
+                label="Category"
+                id="category"
+                onFilterChange={handleFilterChange}
+              />
+              <Search
+                placeholder="search products"
+                onSearchSubmit={handleSearchSubmit}
+              />
+            </>
+          )}
         </div>
-        <Search
-          placeholder="search products"
-          onSearchSubmit={handleSearchSubmit}
-        />
         <div>
-          <button onClick={handleInventorySubmit} disabled={Object.keys(updatedPortions).length === 0}>Update Inventory</button>
+          <button
+            onClick={handleInventorySubmit}
+            disabled={
+              updatedPortions && Object.keys(updatedPortions).length === 0
+            }
+          >
+            Update Inventory
+          </button>
+          <button
+            onClick={handleGenerateReport}
+            disabled={params?.get('generate-report') === 'true'}
+          >
+            Generate Report
+          </button>
           <table>
             <thead>
               <tr>
@@ -171,6 +223,7 @@ export default function Inventory() {
                   <InventoryItem
                     key={index}
                     product={p}
+                    updatedPortions={updatedPortions}
                     setUpdatedPortions={setUpdatedPortions}
                   />
                 ))}
