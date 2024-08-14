@@ -18,6 +18,7 @@ export interface ProductType {
 export interface PortionType {
     id: number;
     size: string;
+    optimalStock: number;
     stock: number;
     price: number;
     soldOut: boolean;

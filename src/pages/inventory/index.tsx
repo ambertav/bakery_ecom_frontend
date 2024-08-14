@@ -21,7 +21,6 @@ export default function Inventory() {
   const [category, setCategory] = useState<string>(
     (params?.get('category') as string) || ''
   );
-  const [sort, setSort] = useState<string>('recommended');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -31,13 +30,12 @@ export default function Inventory() {
       // defining parameters for axios call
       const categoryParam = category ? `category=${category}` : '';
       const pageParam = `page=${params?.get('page')}`;
-      const sortParam = sort ? `sort=${sort}` : '';
       const searchParam = params?.get('search')
         ? `search=${params?.get('search')}`
         : '';
 
       // combining paramaters
-      const queryParams = [categoryParam, searchParam, sortParam, pageParam]
+      const queryParams = [categoryParam, searchParam, pageParam]
         .filter((param) => param)
         .join('&');
 
@@ -80,9 +78,6 @@ export default function Inventory() {
       // set category and add to query
       setCategory(selectedCategory);
 
-      // reset sort parameters, only add category to query
-      setSort('recommended');
-
       selectedCategory ? (newQuery['category'] = selectedCategory) : '';
     }
 
@@ -90,7 +85,6 @@ export default function Inventory() {
   };
 
   const handleSearchSubmit = (search: string) => {
-    setSort('recommended');
 
     let categoryParam: { category?: string } = category ? { category } : {};
     let searchParam: { search?: string } = search ? { search } : {};

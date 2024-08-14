@@ -1,6 +1,5 @@
 import axios from '../../utilities/axiosConfig';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '../../app/firebase/AuthContext';
 import { useState, useEffect } from 'react';
 import { OrderType } from '../../../types/types';
 
@@ -220,7 +219,6 @@ export default function Fulfillment() {
           <table>
             <thead>
               <tr>
-                <th> </th>
                 <th>Order ID</th>
                 <th>Items</th>
                 <th>Status</th>
