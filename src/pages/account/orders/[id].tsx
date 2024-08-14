@@ -70,7 +70,7 @@ export default function OrderDetail() {
               items.map((i, index) => (
                 <li key={index}>
                   <CartItem item={i} />
-                  <Link href={`/products/${i.productId}`}>View Product</Link>
+                  <Link href={`/products/${i.product.id}`}>View Product</Link>
                 </li>
               ))}
           </div>
