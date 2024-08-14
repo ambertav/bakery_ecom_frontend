@@ -18,6 +18,7 @@ export interface ProductType {
 export interface PortionType {
     id: number;
     size: string;
+    optimalStock: number;
     stock: number;
     price: number;
     soldOut: boolean;
@@ -82,4 +83,10 @@ export interface TaskType {
     order_id: number;
     assignedAt: string | null;
     completedAt: string | null;
+}
+
+export interface UpdatedPortionsState {
+    [productId: number]: {
+        [portionId: number]: number
+    };
 }

@@ -58,9 +58,9 @@ export default function FulfillmentItem({
         <ul>
           {order.cartItems!.map((i, index) => (
             <li key={index}>
-              <p>{i.productId}</p>
-              <p>{i.name}</p>
-              <p>{i.portion}</p>
+              <p>{i.product.id}</p>
+              <p>{i.product.name}</p>
+              <p>{i.portion.size}</p>
               <p>{i.quantity}</p>
             </li>
           ))}
