@@ -84,3 +84,9 @@ export interface TaskType {
     assignedAt: string | null;
     completedAt: string | null;
 }
+
+export interface UpdatedPortionsState {
+    [productId: number]: {
+        [portionId: number]: number
+    };
+}
