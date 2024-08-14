@@ -24,7 +24,7 @@ export const renderInput = (
 
   // number type attributes, for create product form
 
-  if (name === 'stock') {
+  if (name.split('-')[0] === 'stock') {
     additionalAttributes.min = '0';
     // prevents user from typing in a decimal point
     additionalAttributes.onKeyPress = (
@@ -56,7 +56,12 @@ export const renderInput = (
         type={type}
         id={name}
         name={name}
-        value={(formInput[name] as string | number) || ''}
+        value={
+          typeof formInput[name] === 'string' ||
+          typeof formInput[name] === 'number'
+            ? formInput[name]
+            : ''
+        }
         onChange={handleChange}
         required={true}
         {...additionalAttributes}
