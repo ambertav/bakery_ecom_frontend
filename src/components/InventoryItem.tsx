@@ -1,4 +1,10 @@
-import { useState, ChangeEvent, Dispatch, SetStateAction } from 'react';
+import {
+  useState,
+  useEffect,
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+} from 'react';
 import Link from 'next/link';
 import {
   FormInput,
@@ -9,14 +15,35 @@ import { renderInput } from '@/utilities/formUtilities';
 
 interface InventoryProps {
   product: ProductType;
+  updatedPortions: UpdatedPortionsState;
   setUpdatedPortions: Dispatch<SetStateAction<UpdatedPortionsState>>;
 }
 
 export default function InventoryItem({
   product,
+  updatedPortions,
   setUpdatedPortions,
 }: InventoryProps) {
   const [stockFormInput, setStockFormInput] = useState<FormInput>({});
+
+  useEffect(() => {
+    if (Object.keys(updatedPortions).length !== 0) {
+      const newStockFormInput: FormInput = {};
+
+      // construct stockFormInput to auto populate incoming stock
+        // when updatedPortions is not empty {}
+        // i.e generate report param
+      for (const [productId, portions] of Object.entries(updatedPortions)) {
+        if (Number(productId) === product.id) {
+          for (const [portionId, stock] of Object.entries(portions)) {
+            newStockFormInput[`stock-${portionId}`] = stock as string;
+          }
+        }
+      }
+
+      setStockFormInput(newStockFormInput);
+    }
+  }, [updatedPortions, product.id]);
 
   const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const portionId = Number(evt.target.name.split('-')[1]);
