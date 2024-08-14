@@ -1,7 +1,7 @@
 import axios from '../../utilities/axiosConfig';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, MouseEvent } from 'react';
-import { FormInput, ProductType } from '../../../types/types';
+import { ProductType, UpdatedPortionsState } from '../../../types/types';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Filter from '@/components/Filter';
@@ -22,6 +22,9 @@ export default function Inventory() {
     (params?.get('category') as string) || ''
   );
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [updatedPortions, setUpdatedPortions] = useState<UpdatedPortionsState>(
+    {}
+  );
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -101,6 +104,32 @@ export default function Inventory() {
     router.push(`inventory?${queryString}`);
   };
 
+  const handleInventorySubmit = async (evt: MouseEvent<HTMLButtonElement>) => {
+    evt.preventDefault();
+
+    console.dir(updatedPortions, { depth: null });
+
+    // if the updatedPortions state is empty, return
+    if (Object.keys(updatedPortions).length === 0) return;
+
+    try {
+      const response = await axios.put(
+        '/product/inventory/update',
+        updatedPortions,
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      if (response.status === 200) {
+        setIsLoading(true);
+        router.push('/inventory');
+      }
+    } catch (error) {
+      console.error('Error updating inventory: ', error);
+    }
+  };
+
   function loaded() {
     return (
       <main>
@@ -126,6 +155,7 @@ export default function Inventory() {
           onSearchSubmit={handleSearchSubmit}
         />
         <div>
+          <button onClick={handleInventorySubmit} disabled={Object.keys(updatedPortions).length === 0}>Update Inventory</button>
           <table>
             <thead>
               <tr>
@@ -138,7 +168,11 @@ export default function Inventory() {
             <tbody>
               {products &&
                 products.map((p, index) => (
-                  <InventoryItem key={index} product={p} />
+                  <InventoryItem
+                    key={index}
+                    product={p}
+                    setUpdatedPortions={setUpdatedPortions}
+                  />
                 ))}
             </tbody>
           </table>
