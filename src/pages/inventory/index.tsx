@@ -85,7 +85,6 @@ export default function Inventory() {
   };
 
   const handleSearchSubmit = (search: string) => {
-
     let categoryParam: { category?: string } = category ? { category } : {};
     let searchParam: { search?: string } = search ? { search } : {};
 
@@ -105,7 +104,7 @@ export default function Inventory() {
   function loaded() {
     return (
       <main>
-        <h1>All Products</h1>
+        <h1>Inventory</h1>
         <div>
           <Filter
             filterOptions={[
@@ -127,19 +126,22 @@ export default function Inventory() {
           onSearchSubmit={handleSearchSubmit}
         />
         <div>
-          <ul>
-            {products && products.length > 0 ? (
-              products.map((p, index) => (
-                <div key={index}>
-                  <InventoryItem product={p} />
-                </div>
-              ))
-            ) : (
-              <div>No products</div>
-            )}
-          </ul>
-        </div>
-        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>Manage</th>
+                <th>Product ID</th>
+                <th>Name</th>
+                <th>Portions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products &&
+                products.map((p, index) => (
+                  <InventoryItem key={index} product={p} />
+                ))}
+            </tbody>
+          </table>
           <Pagination
             totalPages={totalPages!}
             currentPage={currentPage!}
