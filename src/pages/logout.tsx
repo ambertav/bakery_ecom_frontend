@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../app/firebase/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Logout() {
     const router = useRouter();

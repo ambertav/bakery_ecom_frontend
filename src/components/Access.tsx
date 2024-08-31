@@ -11,7 +11,7 @@ import { validateForm } from '@/utilities/formUtilities';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useAuth } from '@/app/firebase/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 // type for signup and login props
 interface AccessProps {
@@ -46,17 +46,14 @@ export default function Access({ method, url, resource }: AccessProps) {
     // passing in localStorageCart for cart item creation and association with user upon signup or login
     const submitBody = {
       name: router.pathname === '/signup' ? formInput.name : '',
+      email: formInput.email,
+      password: formInput.password,
+      confirm_password: formInput.confirm_password,
       localStorageCart: JSON.parse(localStorage.getItem('cart') || '[]'),
     };
 
     try {
-      // signup or login user with firebase
-      const user = await method(
-        formInput.email as string,
-        formInput.password as string
-      );
       try {
-        if (user) {
           const response = await axios.post(url, submitBody, {
             headers: { 'Content-Type': 'application/json' },
           });
@@ -65,7 +62,7 @@ export default function Access({ method, url, resource }: AccessProps) {
             localStorage.removeItem('cart'); // removes items from cart once created in database
             router.push('/');
           }
-        }
+        
       } catch (error: any) {
         console.error(error);
       }

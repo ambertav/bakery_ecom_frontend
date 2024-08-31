@@ -2,14 +2,14 @@ import axios from '../../utilities/axiosConfig';
 import Link from 'next/link';
 import { useState, useEffect, FormEvent, MouseEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '@/app/firebase/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { ProductType, CartItem, ShoppingCart } from '../../../types/types';
 
 import Product from '@/components/Product';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function ProductShow() {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [product, setProduct] = useState<ProductType | null>(null);
   const [validPortions, setValidPortions] = useState<string[]>([]);
@@ -150,7 +150,7 @@ export default function ProductShow() {
           {product !== null ? (
             <>
               <Product product={product} page="show" />
-              {!isAdmin && (
+              {!user?.isAdmin && (
                 <>
                   <form
                     onSubmit={(evt) => {
@@ -192,7 +192,7 @@ export default function ProductShow() {
                   </form>
                 </>
               )}
-              {isAdmin && (
+              {user?.isAdmin && (
                 <Link href={`/products/${product.id}/edit`}>Edit Product</Link>
               )}
             </>

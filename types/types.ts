@@ -1,3 +1,8 @@
+export interface User {
+    name : string;
+    isAdmin : boolean;
+}
+
 export interface FormInput {
     [fieldName: string]: string | number | boolean;
 }

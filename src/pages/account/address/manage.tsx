@@ -1,7 +1,7 @@
 import axios from '../../../utilities/axiosConfig';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/app/firebase/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
 
@@ -85,12 +85,12 @@ export default function ManageAddress() {
                     {a.default ? (
                       'Current Default'
                     ) : (
-                      <button onClick={() => handleDefault(a.id)}>
+                      <button onClick={() => handleDefault(a.id!)}>
                         Set as Default
                       </button>
                     )}
                   </p>
-                  <button onClick={() => handleDelete(a.id)}>
+                  <button onClick={() => handleDelete(a.id!)}>
                     Delete Address
                   </button>
                 </li>
