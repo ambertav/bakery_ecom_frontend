@@ -82,8 +82,8 @@ export default function Access({ method, url, resource }: AccessProps) {
         'employerCode',
       ]);
       if (message) return setErrorMessage(message);
-    } else if (router.pathname === '/admin/update-pin') {
-      let message = await validateForm(formInput, ['pin']);
+    } else if (router.pathname === '/admin/update-password') {
+      let message = await validateForm(formInput, ['password']);
       if (message) return setErrorMessage(message);
     }
 
@@ -92,6 +92,7 @@ export default function Access({ method, url, resource }: AccessProps) {
         // the three desired structures of submit body:
             // for signup: { name, email, password, pin, employerCode }
             // for login: { employeeId, password, pin }
+            // for update-password: { email, employeeId, oldPassword, password, pin }
     const submitBody = {
         pin: formInput.pin,
         password: formInput.password,
@@ -103,6 +104,11 @@ export default function Access({ method, url, resource }: AccessProps) {
         ...(router.pathname === '/admin/login' && {
             employeeId: formInput.employeeId,
         }),
+        ...(router.pathname === '/admin/update-password' && {
+            email: formInput.email,
+            employeeId: formInput.employeeId,
+            oldPassword: formInput.oldPassword,
+        }) 
     };
 
     try {
@@ -114,7 +120,7 @@ export default function Access({ method, url, resource }: AccessProps) {
           // expected http codes + what to do:
             // 201 -- for signup, display toast with received employee id and redirect to fulfilmment page on close
             // 200 -- for login, redirect to fulfillment page
-            // 403 -- expired password
+            // 403 -- expired password, redirect to update password page
             // else, or 401 -- logout of firebase, display error message
 
           if (response.status === 201) {
@@ -130,10 +136,10 @@ export default function Access({ method, url, resource }: AccessProps) {
         await logout();
         if (error.response.status === 403) {
           toast.success(
-            'Your pin is expired, you will be redirected to update your pin',
+            'Your password is expired, you will be redirected to update your password',
             {
               onClose: () => {
-                router.push('/admin/update-pin');
+                router.push('/admin/update-password');
               },
             }
           );

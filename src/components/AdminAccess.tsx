@@ -16,7 +16,7 @@ export default function AdminAccess ({ path, errorMessage, formInput, handleChan
     const titleMap : { [key: string]: string } = {
         '/admin/signup': 'Admin Signup',
         '/admin/login': 'Admin Login',
-        '/admin/update-pin': 'Admin Update Pin'
+        '/admin/update-password': 'Admin Update Password'
     };
 
     const title = titleMap[path] || '';
@@ -49,14 +49,14 @@ export default function AdminAccess ({ path, errorMessage, formInput, handleChan
                         {renderInput('pin', 'Pin', 'password', formInput, handleChange)}
                     </>
                 )}
-                {title === 'Admin Update Pin' && (
+                {title === 'Admin Update Password' && (
                     <>
                         {renderInput('email', 'Email', 'email', formInput, handleChange)}
-                        {renderInput('password', 'Password', 'password', formInput, handleChange)}
                         {renderInput('employeeId', 'Employee ID', 'text', formInput, handleChange)}
-                        {renderInput('oldPin', 'Previous Pin', 'password', formInput, handleChange)}
-                        {renderInput('pin', 'New Pin', 'password', formInput, handleChange)}
-                        {renderInput('confirm_pin', 'Confirm Pin', 'password', formInput, handleChange)}
+                        {renderInput('pin', 'Pin', 'password', formInput, handleChange)}
+                        {renderInput('oldPassword', 'Old Password', 'password', formInput, handleChange)}
+                        {renderInput('password', 'New Password', 'password', formInput, handleChange)}
+                        {renderInput('confirm_password', 'Confirm Password', 'password', formInput, handleChange)}
                    </>
                 )}
                 <input type="submit" className="submit" value='Submit' />

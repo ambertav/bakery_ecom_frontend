@@ -4,7 +4,7 @@ import { auth } from '../../app/firebase/firebaseConfig';
 import Access from '@/components/Access';
 
 
-export default function UpdatePinAndLogin () {
+export default function UpdatePasswordAndLogin () {
 
     async function login (email : string, password : string) : Promise< User | null> {
         try {
@@ -18,7 +18,7 @@ export default function UpdatePinAndLogin () {
 
     return  (
         <>
-            <Access method={login} url='admin/update-pin/'  resource='admin' />  
+            <Access method={login} url='admin/update-password/'  resource='admin' />  
         </>
     );
 }
