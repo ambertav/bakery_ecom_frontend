@@ -1,24 +1,41 @@
-import { signInWithEmailAndPassword, UserCredential, User } from '@firebase/auth';
-import { auth } from '../../app/firebase/firebaseConfig';
+import axios from '@/utilities/axiosConfig';
+import { FormInput } from '../../../types/types';
+import { useRouter } from 'next/router';
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import Access from '@/components/Access';
 
+export default function UpdatePasswordAndLogin() {
+  const router = useRouter();
 
-export default function UpdatePasswordAndLogin () {
+  const adminUpdatePassword = async (formInput: FormInput) => {
+    const submitBody = {
+      email: formInput.email,
+      employeeId: formInput.employeeId,
+      oldPassword: formInput.oldPassword,
+      password: formInput.password,
+      pin: formInput.pin,
+    };
 
-    async function login (email : string, password : string) : Promise< User | null> {
-        try {
-            const userCredential : UserCredential = await signInWithEmailAndPassword(auth, email, password);
-            const currentUser : User | null = userCredential.user;
-            return currentUser;
-        } catch (error) {
-            throw error;
-        }
-    }    
+    try {
+      const response = await axios.post('admin/update-password/', submitBody, {
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-    return  (
-        <>
-            <Access method={login} url='admin/update-password/'  resource='admin' />  
-        </>
-    );
+      if (response.status === 200) router.push('/fulfillment');
+    } catch (error: any) {
+      if (error.response.status === 401) toast.success('Invalid credentials');
+
+      console.error(error);
+    }
+  };
+
+  return (
+    <>
+      <Access handleSubmit={adminUpdatePassword} resource="admin" />
+      <ToastContainer autoClose={false} position="top-center" />
+    </>
+  );
 }
