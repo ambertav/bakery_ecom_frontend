@@ -93,7 +93,6 @@ export const validateForm = async (
         );
         break;
       case 'employerCode':
-        // validating code before user is created in firebase client-side and saved server-side
         validationMessage = await employerCodeVerification(
           employer_code as string
         );
