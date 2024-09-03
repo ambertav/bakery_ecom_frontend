@@ -90,30 +90,23 @@ export default function Access({ method, url, resource }: AccessProps) {
     // formatting the submit body for signup, login, and update pin
         // using spread operator so that empty fields are not included unnecessarily
         // the three desired structures of submit body:
-            // for signup: { name, pin, employerCode }
-            // for login: { employeeId, pin }
-            // for update-pin: { employeeId, pin, oldPin }
+            // for signup: { name, email, password, pin, employerCode }
+            // for login: { employeeId, password, pin }
     const submitBody = {
-      pin: formInput.pin,
-      ...(router.pathname === '/admin/signup' &&
-        formInput.name && { name: formInput.name }),
-      ...(router.pathname === '/admin/signup' &&
-        formInput.employerCode && { employerCode: formInput.employerCode }),
-      ...((router.pathname === '/admin/login' ||
-        router.pathname === '/admin/update-pin') &&
-        formInput.employeeId && { employeeId: formInput.employeeId }),
-      ...(router.pathname === '/admin/update-pin' &&
-        formInput.oldPin && { oldPin: formInput.oldPin }),
+        pin: formInput.pin,
+        password: formInput.password,
+        ...(router.pathname === '/admin/signup' && {
+            name: formInput.name,
+            email: formInput.email,
+            employerCode: formInput.employerCode,
+        }),
+        ...(router.pathname === '/admin/login' && {
+            employeeId: formInput.employeeId,
+        }),
     };
 
     try {
-      // signup or login user with firebase
-      const admin = await method(
-        formInput.email as string,
-        formInput.password as string
-      );
       try {
-        if (admin) {
           const response = await axios.post(url, submitBody, {
             headers: { 'Content-Type': 'application/json' },
           });
@@ -121,19 +114,18 @@ export default function Access({ method, url, resource }: AccessProps) {
           // expected http codes + what to do:
             // 201 -- for signup, display toast with received employee id and redirect to fulfilmment page on close
             // 200 -- for login, redirect to fulfillment page
-            // 403 -- expired pin, logout of firebase and redirect to update pin page
+            // 403 -- expired password
             // else, or 401 -- logout of firebase, display error message
 
           if (response.status === 201) {
             toast.success(`Your employee id is: ${response.data.employeeId}`, {
               onClose: () => {
-                router.push('/fulfillment');
+                router.push('/admin/login');
               },
             });
           } else if (response.status === 200) {
             router.push('/fulfillment');
           }
-        }
       } catch (error: any) {
         await logout();
         if (error.response.status === 403) {

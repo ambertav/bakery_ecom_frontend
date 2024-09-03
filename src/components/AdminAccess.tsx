@@ -44,9 +44,8 @@ export default function AdminAccess ({ path, errorMessage, formInput, handleChan
                 )}
                 {title === 'Admin Login' && (
                     <>
-                        {renderInput('email', 'Email', 'email', formInput, handleChange)}
-                        {renderInput('password', 'Password', 'password', formInput, handleChange)}
                         {renderInput('employeeId', 'Employee ID', 'text', formInput, handleChange)}
+                        {renderInput('password', 'Password', 'password', formInput, handleChange)}
                         {renderInput('pin', 'Pin', 'password', formInput, handleChange)}
                     </>
                 )}
