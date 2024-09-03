@@ -1,4 +1,4 @@
-import { useAuth } from '@/app/firebase/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import { OrderType } from '../../types/types';
 
@@ -17,7 +17,7 @@ export default function FulfillmentItem({
   onUndo,
   onComplete,
 }: FulFillmentProps) {
-  const { name } = useAuth();
+  const { user } = useAuth();
 
   const handleCheckboxChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const isChecked = evt.target.checked;
@@ -46,7 +46,7 @@ export default function FulfillmentItem({
             onChange={handleCheckboxChange}
           />
         )}
-        {order.status === 'in_progress' && order.task?.adminName === name && (
+        {order.status === 'in_progress' && order.task?.adminName === user?.name && (
           <>
             <button onClick={handleUndo}>undo</button>
             <button onClick={handleComplete}>complete</button>

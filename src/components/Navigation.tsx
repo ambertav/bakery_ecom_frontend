@@ -1,10 +1,10 @@
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../app/firebase/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import Link from 'next/link';
 
 function Navigation() {
   const router = useRouter();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
 
   // using router to push query params to cause load on products page with category filter applied
   const handleParams = (category: string) => {
@@ -16,7 +16,7 @@ function Navigation() {
   return (
     <nav>
       <ul>
-        {!isAdmin && (
+        {!user?.isAdmin && (
           <>
             <li>
               Browse Bakery
@@ -52,7 +52,7 @@ function Navigation() {
 
         {user && (
           <>
-            {isAdmin && (
+            {user?.isAdmin && (
               <>
                 <li>
                   <Link href="/inventory">Inventory</Link>
@@ -65,7 +65,7 @@ function Navigation() {
                 </li>
               </>
             )}
-            {!isAdmin && (
+            {!user?.isAdmin && (
               <li>
                 <Link href="/account">Account</Link>
               </li>

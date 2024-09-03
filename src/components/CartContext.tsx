@@ -1,15 +1,14 @@
 import axios from '../utilities/axiosConfig';
 import { useRouter } from 'next/router';
-import { User } from 'firebase/auth';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useAuth } from '@/app/firebase/AuthContext';
-import { ShoppingCart } from '../../types/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { ShoppingCart, User } from '../../types/types';
 
 import debounce from 'lodash/debounce';
 
 type CartContextType = {
     cart: ShoppingCart | null;
-    user: User;
+    user: User | null;
     error: Error | null;
     handleRemove: (id: number) => void;
     updateQuantity: (action: 'minus' | 'plus', id: number, quantity: number) => void;
@@ -26,7 +25,7 @@ export const useCartContext = () => {
 }
 
 export const CartContextProvider = ({ children }: CartContextProviderProps) => {
-    const { user, isAdmin } = useAuth();
+    const { user } = useAuth();
     const router = useRouter();
 
     const [ cart, setCart ] = useState<ShoppingCart | null>(null);
@@ -34,7 +33,7 @@ export const CartContextProvider = ({ children }: CartContextProviderProps) => {
 
     useEffect(() => {
         const fetchShoppingCart = async () => {
-            if (user && !isAdmin) {
+            if (user && !user.isAdmin) {
                 try {
                     const response = await axios.get('cart/');
                     if (response.status === 200) setCart(response.data.shopping_cart);

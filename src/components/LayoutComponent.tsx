@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { AuthContextProvider } from '@/app/firebase/AuthContext';
+import { AuthContextProvider } from '@/contexts/AuthContext';
 import { CartContextProvider } from './CartContext';
 import Navigation from './Navigation';
 import Footer from './Footer';

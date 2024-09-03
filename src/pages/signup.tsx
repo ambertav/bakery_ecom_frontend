@@ -1,21 +1,33 @@
-import { createUserWithEmailAndPassword, UserCredential, User } from '@firebase/auth';
-import { auth } from '../app/firebase/firebaseConfig';
-
+import axios from '../utilities/axiosConfig';
+import { useRouter } from 'next/router';
+import { FormInput } from '../../types/types';
 import Access from '@/components/Access';
 
-export default function Signup () {
+export default function Signup() {
+  const router = useRouter();
 
-    async function signup (email : string, password : string) : Promise<User | null> {
-        try {
-            const userCredential : UserCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const newUser : User | null = userCredential.user;
-            return newUser;
-        } catch (error : any) {
-            throw error;
-        }
+  const userSignup = async (formInput: FormInput) => {
+    const submitBody = {
+      name: formInput.name,
+      email: formInput.email,
+      password: formInput.password,
+      confirm_password: formInput.confirm_password,
+      localStorageCart: JSON.parse(localStorage.getItem('cart') || '[]'),
+    };
+
+    try {
+      const response = await axios.post('user/signup', submitBody, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      // redirect to main page
+      if (response.status === 201) {
+        localStorage.removeItem('cart'); // removes items from cart once created in database
+        router.push('/');
+      }
+    } catch (error: any) {
+      console.error(error);
     }
-      
-    return (
-        <Access method={signup} url='user/signup' resource='user' />
-    );
+  };
+
+  return <Access handleSubmit={userSignup} resource="user" />;
 }

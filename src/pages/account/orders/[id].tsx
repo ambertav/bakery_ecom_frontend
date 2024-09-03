@@ -2,7 +2,7 @@ import axios from '../../../utilities/axiosConfig';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '@/app/firebase/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import CartItem from '@/components/CartItem';

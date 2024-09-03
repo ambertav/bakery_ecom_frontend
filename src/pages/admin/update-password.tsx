@@ -7,29 +7,24 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import Access from '@/components/Access';
 
-export default function Signup() {
+export default function UpdatePasswordAndLogin() {
   const router = useRouter();
 
-  const adminSignup = async (formInput: FormInput) => {
+  const adminUpdatePassword = async (formInput: FormInput) => {
     const submitBody = {
-      name: formInput.name,
       email: formInput.email,
+      employeeId: formInput.employeeId,
+      oldPassword: formInput.oldPassword,
       password: formInput.password,
       pin: formInput.pin,
-      employerCode: formInput.employerCode,
     };
 
     try {
-      const response = await axios.post('admin/signup/', submitBody, {
+      const response = await axios.post('admin/update-password/', submitBody, {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      if (response.status === 201)
-        toast.success(`Your employee id is: ${response.data.employeeId}`, {
-          onClose: () => {
-            router.push('/admin/login');
-          },
-        });
+      if (response.status === 200) router.push('/fulfillment');
     } catch (error: any) {
       if (error.response.status === 401) toast.success('Invalid credentials');
 
@@ -39,7 +34,7 @@ export default function Signup() {
 
   return (
     <>
-      <Access handleSubmit={adminSignup} resource="admin" />
+      <Access handleSubmit={adminUpdatePassword} resource="admin" />
       <ToastContainer autoClose={false} position="top-center" />
     </>
   );

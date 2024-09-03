@@ -2,7 +2,7 @@ import axios from '../../../utilities/axiosConfig';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/app/firebase/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Pagination from '@/components/Pagination';
