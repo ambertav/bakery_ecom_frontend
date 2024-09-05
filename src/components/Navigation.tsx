@@ -58,13 +58,17 @@ function Navigation() {
                   <Link href="/inventory">Inventory</Link>
                 </li>
                 <li>
-                  <Link href="/products/create">Add Products</Link>
-                </li>
-                <li>
                   <Link href="/fulfillment">Fulfillment</Link>
                 </li>
               </>
             )}
+
+            {user?.isAdmin && user?.role == 'super' && (
+                <li>
+                    <Link href="/products/create">Add Products</Link>
+              </li>
+            )}
+
             {!user?.isAdmin && (
               <li>
                 <Link href="/account">Account</Link>

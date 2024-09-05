@@ -13,7 +13,8 @@ export const renderInput = (
         | ChangeEvent<HTMLTextAreaElement>
         | ChangeEvent<HTMLSelectElement>
       >
-    | Dispatch<ChangeEvent<HTMLInputElement>>
+    | Dispatch<ChangeEvent<HTMLInputElement>>,
+    additionalProps: Record<string, any> = {},
 ) => {
   // creating additional attributes contingent on type of input
   let additionalAttributes: {
@@ -65,6 +66,7 @@ export const renderInput = (
         onChange={handleChange}
         required={true}
         {...additionalAttributes}
+        {...additionalProps}
       />
     </div>
   );

@@ -152,6 +152,7 @@ export default function Inventory() {
 
       if (response.status === 200) {
         setIsLoading(true);
+        setUpdatedPortions({} as UpdatedPortionsState);
         router.push('/inventory');
       }
     } catch (error) {
