@@ -6,7 +6,8 @@ import {
   SetStateAction,
 } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   FormInput,
   ProductType,
@@ -25,8 +26,8 @@ export default function InventoryItem({
   updatedPortions,
   setUpdatedPortions,
 }: InventoryProps) {
-    const router = useRouter();
     const params = useSearchParams();
+    const { user } = useAuth();
   const [incomingInput, setIncomingInput] = useState<FormInput>({});
   const [deductInput, setDeductInput] = useState<FormInput>({});
 
@@ -145,9 +146,11 @@ export default function InventoryItem({
         <p>
           <Link href={`/products/${product.id}`}>View</Link>
         </p>
+        {user?.isAdmin && user?.role != 'general' && (
         <p>
           <Link href={`/products/${product.id}/edit`}>Edit</Link>
         </p>
+        )}
       </td>
       <td>{product.id}</td>
       <td>{product.name}</td>

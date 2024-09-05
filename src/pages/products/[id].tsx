@@ -192,7 +192,7 @@ export default function ProductShow() {
                   </form>
                 </>
               )}
-              {user?.isAdmin && (
+              {user?.isAdmin && user?.role != 'general' && (
                 <Link href={`/products/${product.id}/edit`}>Edit Product</Link>
               )}
             </>
