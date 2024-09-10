@@ -1,12 +1,12 @@
 import axios from '../../../utilities/axiosConfig';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { FormInput } from '../../../../types/types';
+import { FormInput, PortionType } from '../../../../types/types';
 import ProductForm from '@/components/ProductForm';
 
 export default function ProductEdit() {
   const router = useRouter();
-  
+
   const [formInput, setFormInput] = useState<FormInput>({});
   const [productId, setProductId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -26,13 +26,16 @@ export default function ProductEdit() {
 
           // storing id for use in edit page's axios request
           setProductId(id as string);
-          setDisplayFile(image)
+          setDisplayFile(image);
 
           // setting form state to product details, to render values in edit form
           setFormInput({
             ...productData,
             // converting category to uppercase
             category: productData.category.toUpperCase(),
+            price: response.data.product.portions.find(
+              (portion: PortionType) => portion.size === 'whole'
+            )?.price,
           });
         }
       } catch (error) {
