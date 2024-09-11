@@ -41,6 +41,7 @@ export default function ProductForm({
   const router = useRouter();
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const isCreate = router.pathname === '/products/create';
 
@@ -98,39 +99,27 @@ export default function ProductForm({
 
   const handleSubmit = async (evt: FormEvent) => {
     evt.preventDefault();
+    setIsSubmitting(true);
 
     try {
       // initialize url and method based on if form is being used for the create or edit page
       const url = isCreate ? 'product/create' : `product/${id}/update`;
       const method = isCreate ? 'post' : 'put';
 
-      const response = await axios[method](url, formInput, {
-        headers: { 'Content-Type': 'application/json' },
+      const submitBody = new FormData();
+
+      Object.entries(formInput).forEach(([key, value]) => {
+        submitBody.append(key, value as string);
+      });
+
+      // required for create, but not for edit
+      if (uploadedFile) submitBody.append('image', uploadedFile);
+
+      const response = await axios[method](url, submitBody, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       if (response.status === (isCreate ? 201 : 200)) {
-
-        // only makes request if :
-            // product was successfully created / updated as to use id in req
-            // and if uploaded file is included (skips req for edit page where new image is not uploaded)
-        if (uploadedFile) {
-          try {
-            const formData = new FormData();
-            formData.append('image', uploadedFile);
-
-            const photoResponse = await axios.post(
-              `product/${response.data.product.id}/upload_photo`,
-              formData,
-              {
-                headers: { 'Content-Type': 'multipart/form-data' },
-              }
-            );
-
-          } catch (error) {
-            console.error('Error uploading photo: ', error);
-          }
-        }
-
         // directs to product show page after submissions
         router.push(`/products/${response.data.product.id}`);
       }
@@ -139,6 +128,8 @@ export default function ProductForm({
         `Error ${isCreate ? 'creating' : 'updating'} product: `,
         error
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -155,6 +146,7 @@ export default function ProductForm({
             id="image"
             onChange={handleFileChange}
             accept=".jpg,.png,.jpeg,.gif"
+            required={router.pathname === '/products/create' ? true : false}
           />
           {renderInput('name', 'Name', 'text', formInput, handleChange)}
           <div key={'description'}>
@@ -163,7 +155,7 @@ export default function ProductForm({
               id="description"
               name="description"
               maxLength={300}
-              value={formInput.description}
+              value={formInput.description as string}
               onChange={handleChange}
               required={true}
             />
@@ -173,7 +165,7 @@ export default function ProductForm({
             <select
               id="category"
               name="category"
-              value={formInput.category}
+              value={formInput.category as string}
               onChange={handleChange}
               required={true}
             >
@@ -187,7 +179,7 @@ export default function ProductForm({
             </select>
           </div>
           {renderInput('price', 'Price', 'number', formInput, handleChange)}
-          <input type="submit" />
+          <input type="submit" disabled={isSubmitting ? true : false} />
         </form>
       </>
     );
